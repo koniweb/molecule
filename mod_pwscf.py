@@ -21,12 +21,12 @@ from numpy import linalg
 # module mod_xyz
 #----------------------------------------------------------------------
 class molecule_rw:
+    def __pwscfinit__(self):
+        self.celldm=float(1.0)
+            
     #############################################################
     # return functions
     #############################################################                      
-    def __pwscfinit__(self):
-        self.celldm=float(1.0)
-    
     def Rcelldm(self):
         return self.celldm
 
@@ -57,49 +57,48 @@ class molecule_rw:
             f=sys.stdout
         else:
             f=open(filename, status)
-        mol=self
         # print options if present
-        if hasattr(mol, 'control'):
-            print >>f, "&control"
-            for i in range(len(mol.control)):
-                print >>f, ('{:s}={:s}').format(mol.control[i][0],mol.control[i][1])
-            print >>f, "/"
-        if hasattr(mol, 'system'):
-            print >>f, "&system"
-            for i in range(len(mol.system)):
-                if mol.system[i][0]=="celldm(1)": 
-                    print >>f, ('{:s}={:f}').format(mol.system[i][0],mol.Rcelldm()/calc.b2A)
-                else:
-                    print >>f, ('{:s}={:s}').format(mol.system[i][0],mol.system[i][1])
-            print >>f, "/"
-        if hasattr(mol, 'electrons'):
-            print >>f, "&electrons"
-            for i in range(len(mol.electrons)):
-                print >>f, ('{:s}={:s}').format(mol.electrons[i][0],mol.electrons[i][1])
-            print >>f, "/"
-        if hasattr(mol, 'ions'):
-            print >>f, "&ions"
-            for i in range(len(mol.ions)):
-                print >>f, ('{:s}={:s}').format(mol.ions[i][0],mol.ions[i][1])
-            print >>f, "/"
-        # print species if present
-        # TODO otherwise calculate them at the beginning
-        if hasattr(mol, 'species'):
-            print >>f
-            print >>f, "ATOMIC_SPECIES crystal"
-            for i in range(len(mol.species)):
-                print >>f, ('{:s}').format(mol.species[i]),
-            print >>f
+        if hasattr(self, 'setup_pwscf'):
+            if hasattr(self.setup_pwscf, 'control'):
+                print >>f, "&control"
+                for i in range(len(self.setup_pwscf.control)):
+                    print >>f, ('{:s}={:s}').format(self.setup_pwscf.control[i][0],self.setup_pwscf.control[i][1])
+                print >>f, "/"
+            if hasattr(self.setup_pwscf, 'system'):
+                print >>f, "&system"
+                for i in range(len(self.setup_pwscf.system)):
+                    print >>f, ('{:s}={:s}').format(self.setup_pwscf.system[i][0],self.setup_pwscf.system[i][1])
+                print >>f, "/"
+            if hasattr(self.setup_pwscf, 'electrons'):
+                print >>f, "&electrons"
+                for i in range(len(self.setup_pwscf.electrons)):
+                    print >>f, ('{:s}={:s}').format(self.setup_pwscf.electrons[i][0],self.setup_pwscf.electrons[i][1])
+                print >>f, "/"
+            if hasattr(self.setup_pwscf, 'ions'):
+                print >>f, "&ions"
+                for i in range(len(self.setup_pwscf.ions)):
+                    print >>f, ('{:s}={:s}').format(self.setup_pwscf.ions[i][0],self.setup_pwscf.ions[i][1])
+                print >>f, "/"
+            # print species if present
+            # TODO otherwise calculate them at the beginning
+            if hasattr(self.setup_pwscf, 'species'):
+                print >>f
+                print >>f, "ATOMIC_SPECIES"
+                for i in range(len(self.setup_pwscf.Rspecies() )):
+                    print >>f, ('{:5s} {:11.8f} {:s}').format(self.setup_pwscf.Rspecies()[i][0],
+                                                              self.setup_pwscf.Rspecies()[i][1],
+                                                              self.setup_pwscf.Rspecies()[i][2])
+                print >>f
         # print relative coordinates
         print >>f
-        print >>f, "ATOMIC_POSITIONS"
-        for cntat in range(mol.Rnatoms()):
+        print >>f, "ATOMIC_POSITIONS crystal"
+        for cntat in range(self.Rnatoms()):
             print >>f ,(
                 '{:4s} {:15.10f} {:15.10f} {:15.10f}'.format(
-                    mol.at[cntat].Rname(),
-                    mol.at[cntat].coord_rel[0], 
-                    mol.at[cntat].coord_rel[1], 
-                    mol.at[cntat].coord_rel[2]
+                    self.at[cntat].Rname(),
+                    self.at[cntat].coord_rel[0], 
+                    self.at[cntat].coord_rel[1], 
+                    self.at[cntat].coord_rel[2]
                     )
                 )
         print >>f
@@ -107,15 +106,15 @@ class molecule_rw:
         for cntvec in range(0,3):
             print >>f , (
                 '{:15.10f} {:15.10f} {:15.10f}'.format(
-                    mol.Rvec()[cntvec][0]/mol.Rcelldm(), 
-                    mol.Rvec()[cntvec][1]/mol.Rcelldm(), 
-                    mol.Rvec()[cntvec][2]/mol.Rcelldm()
+                    self.Rvec()[cntvec][0]/self.Rcelldm(), 
+                    self.Rvec()[cntvec][1]/self.Rcelldm(), 
+                    self.Rvec()[cntvec][2]/self.Rcelldm()
                     )
                 )
-        if hasattr(mol,"kpoints"):
+        if hasattr(self,"setup_pwscf") and hasattr(self.setup_pwscf,"kpoints"):
             print >>f
             print >>f, "K_POINTS"
-            print >>f , ('{:s}'.format(mol.kpoints[0]))
+            print >>f , ('{:s}'.format(self.setup_pwscf.kpoints))
         f.close()
         return
     
@@ -124,14 +123,14 @@ class molecule_rw:
         # set molecule
         molecules=[]
         natoms=0
+        ntypes=0
         vec=[]
         # read file
         file=open(filename, 'r')
         opt=""
         cntline=0
-        cntat=0
         cntvec=0
-        cnttypes=0
+        cntat=0
         for line in file:
             cntline+=1
             linesplit=line.split()
@@ -142,96 +141,58 @@ class molecule_rw:
                 mol=self.__class__()
                 mol.at=[]
                 # additional optional fields
-                mol.control=[]
-                mol.system=[]
-                mol.electrons=[]
-                mol.ions=[]
-                mol.kpoints=[]
-                mol.species=[]
+                mol.setup_pwscf=setup_pwscf()
             #
             # Do READ IN
             #
             # read vectors
             if  opt=="readvec":
-                vec.append([float(linesplit[0])*mol.Rcelldm(),
-                            float(linesplit[1])*mol.Rcelldm(),
-                            float(linesplit[2])*mol.Rcelldm()])
+                vec.append([float(linesplit[0]),
+                            float(linesplit[1]),
+                            float(linesplit[2])])
                 cntvec+=1
                 if cntvec==3: opt=""
-            # read coordinates
+            # read species
             if  opt=="readspecies":
-                mol.species.append(line)
-                cnttypes+=1
-                if cnttypes==ntypes: opt=""
-            # read unitvector
+                if not len(linesplit)==0:
+                    name=linesplit[0]
+                    mass=float(linesplit[1])
+                    pot=linesplit[2]
+                    mol.setup_pwscf.add_species(name,mass,pot)
+                    ntypes+=1
+                else: opt=""
+            # read atoms
             elif opt=="readcoord":
-                mol.at.append(
-                    self.__class__.atom(
-                        mol,
-                        cntat,
-                        linesplit[0],0,
-                        float(linesplit[1]),
-                        float(linesplit[2]),
-                        float(linesplit[3])
+                if not len(linesplit)==0:
+                    mol.at.append(
+                        self.__class__.atom(
+                            mol,
+                            cntat,
+                            linesplit[0],0,
+                            float(linesplit[1]),
+                            float(linesplit[2]),
+                            float(linesplit[3])
+                            )
                         )
-                    )
-                cntat+=1
-                if int(cntat)==int(natoms): opt=""
+                    cntat+=1
+                    natoms=cntat
+                else: opt=""
             # read input options
-            elif opt=="system":
-                if linesplit[0]=="/": 
-                    opt=""
-                    for i in range(len(mol.system)):
-                        s=mol.system[i]
-                        if   s[0]=="nat":       natoms=int(s[1])
-                        elif s[0]=="ntyp":      ntypes=int(s[1])
-                        elif s[0]=="celldm(1)": mol.set_celldm(float(s[1])*calc.b2A)
-                else:
-                    for i in range(len(linesplit)):
-                        linesplit[i]=linesplit[i].replace(",","")
-                        mol.system.append(linesplit[i].split("="))
-            elif opt=="control":
-                if linesplit[0]=="/": opt=""
-                else:
-                    for i in range(len(linesplit)):
-                        linesplit[i]=linesplit[i].replace(",","")
-                        mol.control.append(linesplit[i].split("="))
-            elif opt=="electrons":
-                if linesplit[0]=="/": opt=""
-                else:
-                    for i in range(len(linesplit)):
-                        linesplit[i]=linesplit[i].replace(",","")
-                        mol.electrons.append(linesplit[i].split("="))
-            elif opt=="ions":
-                if linesplit[0]=="/": opt=""
-                else:
-                    for i in range(len(linesplit)):
-                        linesplit[i]=linesplit[i].replace(",","")
-                        mol.ions.append(linesplit[i].split("="))
-            elif opt=="readkpoints":
-                mol.kpoints.append(line)
-                opt=""
-            #
+            opt=mol.readpwscfin_opt(linesplit,opt)
             # read main options
-            #
-            if len(linesplit)>0:
-                option=linesplit[0]
-                if  option=="&control":
-                    opt="control"
-                elif option=="&system":
-                    opt="system"
-                elif option=="&electrons":
-                    opt="electrons"
-                elif option=="&ions":
-                    opt="ions"
-                elif option=="ATOMIC_SPECIES":
-                    opt="readspecies"
-                elif option=="ATOMIC_POSITIONS":
-                    opt="readcoord"
-                elif option=="CELL_PARAMETERS":
-                    opt="readvec"
-                elif option=="K_POINTS":
-                    opt="readkpoints"                    
+            opt=mol.readpwscfin_blocks(linesplit,opt)
+        #
+        # set data
+        #
+        # set celldm
+        for i in range(len(mol.setup_pwscf.system)):
+            if mol.setup_pwscf.system[i][0]=="celldm(1)": 
+                celldm=float(mol.setup_pwscf.system[i][1])
+                mol.set_celldm(celldm*calc.b2A)
+                mol.setup_pwscf.set_celldm(celldm)
+        # set vector correctly
+        for i in range(len(vec)):
+            vec[i]=calc.scal_vecmult(mol.Rcelldm(),vec[i])
         # set periodicity
         mol.set_periodicity(vec[0],vec[1],vec[2])
         # set real coordinates
@@ -268,26 +229,15 @@ class molecule_rw:
                 mol=self.__class__()
                 mol.at=[]
                 # additional optional fields
-                #mol.control=[]
-                #mol.system=[]
-                #mol.electrons=[]
-                #mol.ions=[]
-                #mol.kpoints=[]
-                mol.species=[]
-                    
+                mol.setup_pwscf=setup_pwscf()        
             if  opt=="readcoord" and cntat==0:
                 if not len(mol.at)==0:
                     mol=self.__class__()
                     mol.at=[]
                     # additional optional fields
-                    #mol.control=[]
-                    #mol.system=[]
-                    #mol.electrons=[]
-                    #mol.ions=[]
-                    #mol.kpoints=[]
-                    #mol.species=[]
-                # attribute global attributes to molecule
-                mol.set_celldm(celldm*calc.b2A)
+                    mol.setup_pwscf=setup_pwscf()
+                    # attribute global attributes to molecule
+                    mol.set_celldm(celldm*calc.b2A)
             #
             # Do READ IN
             #
@@ -300,6 +250,10 @@ class molecule_rw:
                 if cntvec==3: opt=""
             # read coordinates
             if  opt=="readspecies":
+                name=linesplit[0]
+                mass=float(linesplit[2])
+                pot=name+".uspp736.pbe.UPF"
+                mol.setup_pwscf.add_species(name,mass,pot)
                 cnttypes+=1
                 if cnttypes==ntypes: opt=""
             # read unitvector
@@ -335,7 +289,9 @@ class molecule_rw:
                 elif len(linesplit)>3 and linesplit[0:4]==["number","of","atomic","types"]:
                     ntypes=int(linesplit[5])                        
                 elif len(linesplit)>1 and linesplit[0]=="celldm(1)=":
-                    mol.set_celldm(float(linesplit[1])*calc.b2A)
+                    celldm=(float(linesplit[1])*calc.b2A)
+                    mol.set_celldm(celldm*calc.b2A)
+
             #
             # read main options
             #
@@ -352,6 +308,65 @@ class molecule_rw:
         # return molecules
         return molecules
 
+    # read input file options
+    def readpwscfin_opt(self,linesplit,opt):
+        if   opt=="system":
+            if linesplit[0]=="/": opt=""
+            else:
+                for i in range(len(linesplit)):
+                    linesplit[i]=linesplit[i].replace(",","")
+                    self.setup_pwscf.system.append(linesplit[i].split("="))
+        elif opt=="control":
+            if linesplit[0]=="/": opt=""
+            else:
+                for i in range(len(linesplit)):
+                    linesplit[i]=linesplit[i].replace(",","")
+                    self.setup_pwscf.control.append(linesplit[i].split("="))
+        elif opt=="electrons":
+            if linesplit[0]=="/": opt=""
+            else:
+                for i in range(len(linesplit)):
+                    linesplit[i]=linesplit[i].replace(",","")
+                    self.setup_pwscf.electrons.append(linesplit[i].split("="))
+        elif opt=="ions":
+            if linesplit[0]=="/": opt=""
+            else:
+                for i in range(len(linesplit)):
+                    linesplit[i]=linesplit[i].replace(",","")
+                    self.setup_pwscf.ions.append(linesplit[i].split("="))
+        elif opt=="readkpoints":
+            line=" ".join(linesplit)
+            self.setup_pwscf.kpoints=line
+            opt=""
+        return opt
+
+    # find option blocks in pwscf
+    # return opt
+    def readpwscfin_blocks(self,linesplit,opt):
+        # find keywords for blocks
+        if len(linesplit)>0:
+            option=linesplit[0]
+            if  option=="&control":
+                opt="control"
+            elif option=="&system":
+                opt="system"
+            elif option=="&electrons":
+                opt="electrons"
+            elif option=="&ions":
+                opt="ions"
+            elif option=="ATOMIC_SPECIES":
+                opt="readspecies"
+            elif option=="ATOMIC_POSITIONS":
+                opt="readcoord"
+            elif option=="CELL_PARAMETERS":
+                opt="readvec"
+            elif option=="K_POINTS":
+                opt="readkpoints"                    
+        # return internal keywords
+        return opt
+        
+
+
     def rel2real(self):
         for i in range(len(self.at)):
             coo=[float(0.0),float(0.0),float(0.0)]
@@ -361,3 +376,42 @@ class molecule_rw:
             # set relative and real coordinates
             self.at[i].coord_rel=self.at[i].coord
             self.at[i].spos(coo[0],coo[1],coo[2])
+
+#
+# PWSCF input file option class
+#
+class setup_pwscf():
+    def __init__(self):
+        self.control=[]
+        self.system=[]
+        self.electrons=[]
+        self.ions=[]
+        # kpoints Na Nb Nc Sa Sb Sc
+        self.kpoints="1 1 1 0 0 0"
+        # species [name,mass,pseudopot]
+        self.species=[]
+        
+    #############################################################
+    # return functions
+    #############################################################                      
+    def Rspecies(self):
+        return self.species
+    def Rcelldm(self):
+        celldm=1.0
+        for i in range(len(system)):
+            if self.system[0]=="celldm(1)":
+                celldm=float(self.system[1])
+        return celldm
+    #############################################################
+    # modify functions
+    #############################################################    
+    def set_celldm(self,celldm):
+        # IN BOHR
+        for i in range(len(self.system)):
+            if self.system[0]=="celldm(1)": 
+                self.system[1]=str(celldm)
+                return
+        
+    def add_species(self,name,mass,pseudopot):
+        self.species.append([name,mass,pseudopot])
+        
