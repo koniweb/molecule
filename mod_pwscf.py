@@ -141,7 +141,7 @@ class molecule_rw:
                 mol=self.__class__()
                 mol.at=[]
                 # additional optional fields
-                mol.setup_pwscf=setup_pwscf()
+                mol.setup_pwscf=mol.SETUP_PWSCF()
             #
             # Do READ IN
             #
@@ -229,13 +229,13 @@ class molecule_rw:
                 mol=self.__class__()
                 mol.at=[]
                 # additional optional fields
-                mol.setup_pwscf=setup_pwscf()        
+                mol.setup_pwscf=mol.SETUP_PWSCF()        
             if  opt=="readcoord" and cntat==0:
                 if not len(mol.at)==0:
                     mol=self.__class__()
                     mol.at=[]
                     # additional optional fields
-                    mol.setup_pwscf=setup_pwscf()
+                    mol.setup_pwscf=mol.SETUP_PWSCF()
                     # attribute global attributes to molecule
                     mol.set_celldm(celldm*calc.b2A)
             #
@@ -377,41 +377,53 @@ class molecule_rw:
             self.at[i].coord_rel=self.at[i].coord
             self.at[i].spos(coo[0],coo[1],coo[2])
 
-#
-# PWSCF input file option class
-#
-class setup_pwscf():
-    def __init__(self):
-        self.control=[]
-        self.system=[]
-        self.electrons=[]
-        self.ions=[]
-        # kpoints Na Nb Nc Sa Sb Sc
-        self.kpoints="1 1 1 0 0 0"
-        # species [name,mass,pseudopot]
-        self.species=[]
-        
-    #############################################################
-    # return functions
-    #############################################################                      
-    def Rspecies(self):
-        return self.species
-    def Rcelldm(self):
-        celldm=1.0
-        for i in range(len(system)):
-            if self.system[0]=="celldm(1)":
-                celldm=float(self.system[1])
-        return celldm
-    #############################################################
-    # modify functions
-    #############################################################    
-    def set_celldm(self,celldm):
-        # IN BOHR
-        for i in range(len(self.system)):
-            if self.system[0]=="celldm(1)": 
-                self.system[1]=str(celldm)
-                return
-        
-    def add_species(self,name,mass,pseudopot):
-        self.species.append([name,mass,pseudopot])
+    def read_setup_pwscf(self,filename):
+        file=open(filename,"r")
+        opt=""
+        cntline=0
+        for line in file:
+            cntline+=1
+            linesplit=line.split()
+            # read input options
+            opt=self.readpwscfin_opt(linesplit,opt)
+            # read main options
+            opt=self.readpwscfin_blocks(linesplit,opt)
+        file.close()
+    #
+    # PWSCF input file option class
+    #
+    class SETUP_PWSCF():
+        def __init__(self):
+            self.control=[]
+            self.system=[]
+            self.electrons=[]
+            self.ions=[]
+            # kpoints Na Nb Nc Sa Sb Sc
+            self.kpoints="1 1 1 0 0 0"
+            # species [name,mass,pseudopot]
+            self.species=[]
+            
+        #############################################################
+        # return functions
+        #############################################################                      
+        def Rspecies(self):
+            return self.species
+        def Rcelldm(self):
+            celldm=1.0
+            for i in range(len(system)):
+                if self.system[0]=="celldm(1)":
+                    celldm=float(self.system[1])
+            return celldm
+        #############################################################
+        # modify functions
+        #############################################################    
+        def set_celldm(self,celldm):
+            # IN BOHR
+            for i in range(len(self.system)):
+                if self.system[0]=="celldm(1)": 
+                    self.system[1]=str(celldm)
+                    return
+            
+        def add_species(self,name,mass,pseudopot):
+            self.species.append([name,mass,pseudopot])
         
