@@ -52,12 +52,12 @@ class molecule(cm.molecule):
         f=(-calc.vecprod(normal,point))
         # loop over molecules
         for i in range(0,self.Rnmol()):
-            for j in range(0,self.mol[i].Rnatoms()): #len(self.mol[i].at)
-                coo=self.mol[i].at[j].Rcoord()
+            for j in range(0,self.mol[i].natoms()):
+                coo=self.mol[i].at()[j].Rcoord()
                 D=(calc.vecprod(normal,coo)+f)/calc.length(normal)
                 # if above plane remove
                 if D>0.0:
-                    poplist.append(self.mol[i].Rid())
+                    poplist.append(self.mol[i].id())
         # rm double or tripple counts
         poplist=sorted(list( set(poplist) ))
         # pop molecules

@@ -25,15 +25,15 @@ class molecule_rw:
         else:
             f=open(filename, status)
         mol=self
-        print >>f, mol.Rnatoms()
+        print >>f, mol.natoms()
         print >>f, mol.Rcomment()
-        for cntat in range(0,mol.natoms):
+        for cntat in range(0,mol.natoms()):
             print >>f ,(
                 '{:4s} {:15.10f} {:15.10f} {:15.10f}'.format(
-                    mol.at[cntat].Rname(), 
-                    mol.at[cntat].Rcoord()[0], 
-                    mol.at[cntat].Rcoord()[1], 
-                    mol.at[cntat].Rcoord()[2]
+                    mol.at()[cntat].Rname(), 
+                    mol.at()[cntat].Rcoord()[0], 
+                    mol.at()[cntat].Rcoord()[1], 
+                    mol.at()[cntat].Rcoord()[2]
                     )
                 )
         f.close()
@@ -55,7 +55,7 @@ class molecule_rw:
             # create new molecule
             if (cntline-oldline)%(natoms+2)==1:
                 mol=self.__class__()
-                mol.at=[]
+                mol.clear_atoms()
                 cntat=0
                 natoms=int(linesplit[0])
             # save comment
@@ -72,12 +72,9 @@ class molecule_rw:
                     name=linesplit[0]
                     number=self.type_name2number(name)
                 # append atoms
-                mol.at.append(
-                #molecules[0].at.append( #del
-                    #cm.molecule.atom(
+                mol.append_atom(
                     self.__class__.atom(
                         mol,
-                        #molecules[0], #del
                         cntat,
                         name,
                         number,

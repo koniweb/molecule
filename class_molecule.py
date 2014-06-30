@@ -14,30 +14,30 @@ import sys
 import math
 from operator import itemgetter, attrgetter
 import mod_calc as calc # several functions
+import copy
 
 ndim=calc.ndim
 types=[
     # types[type][0] name
     # types[type][1] id
     # types[type][2] ~ weight
-        ["X",  0, 0.0],
-        ["H",  1, 1.0079],["He",2,4.0026],
+    # types[type][3] pseudopotential
+        ["X",  0, 0.0,"pseudopotential"],
+        ["H",  1, 1.0079, "P"], ["He",2,4.0026,   "P"],
         
-        ["Li", 3, 6.941], ["Be", 4, 9.0122], 
-        ["B" , 5,10.811], ["C" , 6,12.0107], ["N" , 7,14.007], 
-        ["O" , 8,15.999], ["F" , 9,18.998],  ["Ne",10,20.18],
+        ["Li", 3, 6.941,  "P"], ["Be", 4, 9.0122, "P"], 
+        ["B" , 5,10.811,  "P"], ["C" , 6,12.0107, "P"], ["N" , 7,14.007, "P"], 
+        ["O" , 8,15.999,  "P"], ["F" , 9,18.998,  "P"], ["Ne",10,20.18,  "P"],
         
-        ["Na",11,22.99],  ["Mg",12,24.305],  
-        ["Al",13,26.982], ["Si",14,28.086],  ["P" ,15,30.974], 
-        ["S", 16,32.065], ["Cl",17,35.453],  ["Ar",18,39.948],
+        ["Na",11,22.99,   "P"], ["Mg",12,24.305,  "P"],  
+        ["Al",13,26.982,  "P"], ["Si",14,28.086,  "P"], ["P" ,15,30.974, "P"], 
+        ["S", 16,32.065,  "P"], ["Cl",17,35.453,  "P"], ["Ar",18,39.948, "P"],
 
-        ["K", 19,39.098], ["Ca",20,40.078], 
+        ["K", 19,39.098,  "P"], ["Ca",20,40.078,  "P"], 
         # row transition metals
-        ["Ga",31,69.723], ["Ge",32,72.64],   ["As",33,74.922], 
-        ["Se",34,78.96],  ["Br",35,79.904],  ["Kr",36,83.798]
-
+        ["Ga",31,69.723,  "P"], ["Ge",32,72.64,   "P"], ["As",33,74.922, "P"], 
+        ["Se",34,78.96,   "P"], ["Br",35,79.904,  "P"], ["Kr",36,83.798, "P"]
         ]
-
 #----------------------------------------------------------------------
 # classes
 #----------------------------------------------------------------------
@@ -55,17 +55,16 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,mext.molecule_e
     def __init__(self):           
         # other inits
         mpw.molecule_rw.__pwscfinit__(self)
-        # id
-        self.id=id(self)
+        # pse
+        self.__types=copy.deepcopy(types)
         # set molecule info
-        self.natoms=0
-        self.ntypes=0
-        self.typelist=[]
+        self.__typelist=[]
         self.file=""
         self.filemolnumber=0
         self.comment=""
+        self.__id=id(self)
         # set atom list
-        self.at=[]
+        self.__at=[]
         self.vec=[[0.0 for x in xrange(0,ndim)]for x in xrange(0,ndim)]
         self.offset=[0.0,0.0,0.0]
 
@@ -73,12 +72,12 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,mext.molecule_e
     # return functions
     #############################################################                      
     # return id
-    def Rid(self):
-        return self.id
+    def id(self):
+        return self.__id
 
     # return at
-    def Rat(self):
-        return self.at
+    def at(self):
+        return self.__at
 
     # return periodicity vectors
     def Rvec(self):
@@ -89,40 +88,79 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,mext.molecule_e
         return self.offset
         
     # return natoms
-    def Rnatoms(self):
-        return self.natoms
+    def natoms(self):
+        return len(self.__at)
         
+    # return typelist
+    def typelist(self):
+        return self.__typelist
+
     # return ntypes
-    def Rntypes(self):
-        return self.ntypes
+    def ntypes(self):
+        return len(self.typelist())
         
-    # return typelist
-    def Rtypelist(self):
-        return self.typelist
-        
-    # return typelist
+    # return comment
     def Rcomment(self):
         return self.comment
+
+    # return comment
+    def types(self):
+        return self.__types
+
+    #############################################################
+    # set functions
+    #############################################################    
+    # set id
+    def set_id(self,id):
+        self.__id=id
+        
+    # append to typelist
+    def typelist_append(self,tid,name=""):
+        self.__typelist.append([int(tid),name])
+        return
+    
+    # set typelist
+    def set_typelist(self,list):
+        self.__typelist=list
+
+    # set atomlist
+    def set_atomlist(self,list):
+        self.__at=list
+
+    # clear atom list
+    def clear_atoms(self):
+        self.__at=[]
+    # append atom
+    def append_atom_coo(self,type,x,y,z):
+        i=len(self.at())
+        self.__at.append(self.atom(self,i,"test",-1,"0.0","0.0","0.0"))
+        self.__at[i].set(type,x,y,z)
+        return
+    # append an instance atom
+    def append_atom_cp(self,addat):
+        self.__at.append(self.atom(addat.mol,addat.id,addat.name,addat.number,
+                                   addat.coord[0],addat.coord[1],addat.coord[2],
+                                   addat.mult[0],addat.mult[1],addat.mult[2])
+                       )
+        self.__at[self.natoms()].charge=addat.charge
+        return
+    def append_atom(self,atom):
+        self.__at.append(atom)
+
+    # set pseudopotential
+    def set_type(self,identification,mass=-1.0,pseudopotential=""):
+        if mass>0.0:
+            self.__types[tid][2]=float(mass)
+        # set pseudopotential
+        if not pseudopotential=="":
+            # if name calculate id
+            if type(identification)==type(''): tid=self.type_name2number(name)
+            else: tid=identification
+            self.__types[tid][3]=pseudopotential
 
     #############################################################
     # modify functions
     #############################################################    
-    # append atom
-    def append_atom_coo(self,type,x,y,z):
-        i=len(self.at)
-        self.at.append(self.atom(self,i,"test",-1,"0.0","0.0","0.0"))
-        self.at[i].set(type,x,y,z)
-        return
-
-    # append an instance atom
-    def append_atom_cp(self,addat):
-        self.at.append(self.atom(addat.mol,addat.id,addat.name,addat.number,
-                            addat.coord[0],addat.coord[1],addat.coord[2],
-                            addat.mult[0],addat.mult[1],addat.mult[2])
-                       )
-        self.at[self.natoms].charge=addat.charge
-        return
-    
     # append molecule
     def append_mol(self,molecule,shiftv=[0.0,0.0,0.0],
                 rotangle=0.0,rota=[1.0,0.0,0.0],rotp=[0.0,0.0,0.0]):
@@ -130,8 +168,8 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,mext.molecule_e
         molecule.rot(rotangle,rota[0],rota[1],rota[2],rotp[0],rotp[1],rotp[2])
         molecule.shift(shiftv[0],shiftv[1],shiftv[2])
         # add to new molecule
-        for iat in range(0,molecule.natoms):
-            self.append_atom_cp(molecule.at[iat])
+        for iat in range(0,molecule.natoms()):
+            self.append_atom_cp(molecule.at()[iat])
         # shift and rotate molecules back
         molecule.shift(-shiftv[0],-shiftv[1],-shiftv[2])
         molecule.rot(-rotangle,rota[0],rota[1],rota[2],rotp[0],rotp[1],rotp[2])
@@ -139,37 +177,34 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,mext.molecule_e
 
     # set natoms ntypes and filename
     def set(self,filename="",filemolnumber=0,comment=""):
-        self.natoms=len(self.at)
         self.file=filename
         self.filemolnumber=filemolnumber
         self.comment=comment
         # get ntypes
-        if any(x.tid == -1 for x in self.at): self.set_ntypes()
+        if any(x.tid == -1 for x in self.at()): self.set_ntypes()
         else: self.set_ntypes_tid()
         return
 
     # set ntypes
     def set_ntypes(self):
-        for cnt in range(self.natoms):
-            for cnttype in range(len(self.typelist)):
-                if self.at[cnt].number==self.typelist[cnttype]:
-                    self.at[cnt].tid=cnttype
+        for cnt in range(self.natoms()):
+            for cnttype in range(self.ntypes()):
+                if self.at()[cnt].number==self.typelist()[cnttype][0]:
+                    self.at()[cnt].tid=cnttype
                     break
             else:
-                self.typelist.append(self.at[cnt].number)
-                self.at[cnt].tid=len(self.typelist)-1
-        self.ntypes=len(self.typelist)
+                self.typelist_append(self.at()[cnt].number)
+                self.at()[cnt].tid=self.ntypes()-1
         return
     # set ntypes if tid already defined
     def set_ntypes_tid(self):
-        for cnt in range(self.natoms):
-            for cnttype in range(len(self.typelist)):
-                if (self.at[cnt].number==self.typelist[cnttype] and 
-                    self.at[cnt].tid==cnttype):
+        for cnt in range(self.natoms()):
+            for cnttype in range(self.ntypes()):
+                if (self.at()[cnt].number==self.typelist()[cnttype][0] and 
+                    self.at()[cnt].tid==cnttype):
                     break
             else:
-                self.typelist.append(self.at[cnt].number)
-        self.ntypes=len(self.typelist)
+                self.typelist_append(self.at()[cnt].number)
         return
                            
     # set periodicity
@@ -196,27 +231,27 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,mext.molecule_e
     # set number range
     def set_number(self,type,st=0,end=0):
         if end <= 0: 
-            end = len(self.at) + end
-            if end <=0: end = len(self.at)
+            end = self.natoms() + end
+            if end <=0: end = self.natoms()
         print 'setting atom {:d} - {:d} type {:d} ...'.format(st,end,type)
         for cntat in range(st,end):
-            self.at[cntat].snumber(int(type))
+            self.at()[cntat].snumber(int(type))
         return
 
     # set name range
     def set_name(self,name,st=0,end=0):
         if end <= 0: 
-            end = len(self.at) + end
-            if end <=0: end = len(self.at)
+            end = self.natoms() + end
+            if end <=0: end = self.natoms()
         print 'setting atom {:d} - {:d} name {:s} ...'.format(st,end,name)
         for cntat in range(st,end):
-            self.at[cntat].sname(name)
+            self.at()[cntat].sname(name)
         return
     
     # shift molecule
     def shift(self,x,y,z):
-        for cnt in range(0,self.natoms):
-            self.at[cnt].shift(x,y,z)
+        for cnt in range(0,self.natoms()):
+            self.at()[cnt].shift(x,y,z)
         return
             
     # rotate molecule
@@ -249,8 +284,8 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,mext.molecule_e
         mat[1][2]=az*ay*(1.-cos(angle))+ax*sin(angle)
         mat[2][2]=az*az*(1.-cos(angle))+   cos(angle)
         # do rotation on all atoms
-        for cntat in range(0,self.natoms):
-            coo=self.at[cntat].coord
+        for atom in self.at():
+            coo=atom.coord
             x= mat[0][0]*coo[0] + mat[1][0]*coo[1] + mat[2][0]*coo[2]
             y= mat[0][1]*coo[0] + mat[1][1]*coo[1] + mat[2][1]*coo[2]
             z= mat[0][2]*coo[0] + mat[1][2]*coo[1] + mat[2][2]*coo[2]
@@ -269,6 +304,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,mext.molecule_e
         # types[type][0] name
         # types[type][1] id
         # types[type][2] ~ weight
+        # types[type][3] pseudopotential
         number=0
         for cnt in range(len(types)):
             if name==types[cnt][0]:
@@ -280,6 +316,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,mext.molecule_e
         # types[type][0] name
         # types[type][1] id
         # types[type][2] ~ weight
+        # types[type][3] pseudopotential
         name=""
         for cnt in range(len(types)):
             if weight==types[cnt][2]:
@@ -289,10 +326,9 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,mext.molecule_e
     # stretch structure
     def stretch(self,factor):
         # stretch atoms
-        for i in range(len(self.at)):
+        for atom in self.at():
             for d in range(ndim): 
-                self.at[i].coord[d]=self.at[i].coord[d]*factor[d]
-
+                atom.coord[d]=atom.coord[d]*factor[d]
         for d in range(ndim):
             for vcnt in range(ndim):
                 self.vec[vcnt][d]=self.vec[vcnt][d]*factor[d]

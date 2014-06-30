@@ -41,17 +41,15 @@ class molecule_rw:
     # write pwscf output format
     def writepwscf(self,filename="",status='w'):
         # calculate relative coordinates
-        if not hasattr(self.at[0],"coord_rel"):
-            vecM = matrix( [ [self.Rvec()[0][0],self.Rvec()[1][0],self.Rvec()[2][0]],
-                             [self.Rvec()[0][1],self.Rvec()[1][1],self.Rvec()[2][1]],
-                             [self.Rvec()[0][2],self.Rvec()[1][2],self.Rvec()[2][2]] ])
-            for cntat in range(self.Rnatoms()):
-                tmp = matrix([ [self.at[cntat].Rcoord()[0]],
-                               [self.at[cntat].Rcoord()[1]],
-                               [self.at[cntat].Rcoord()[2]] ])
-                res=linalg.solve(vecM, tmp)
-                self.at[cntat].coord_rel=[float(res[0]),float(res[1]),float(res[2])]
-                print self.at[cntat].coord_rel
+        vecM = matrix( [ [self.Rvec()[0][0],self.Rvec()[1][0],self.Rvec()[2][0]],
+                         [self.Rvec()[0][1],self.Rvec()[1][1],self.Rvec()[2][1]],
+                         [self.Rvec()[0][2],self.Rvec()[1][2],self.Rvec()[2][2]] ])
+        for atom in self.at():
+            tmp = matrix([ [atom.Rcoord()[0]],
+                           [atom.Rcoord()[1]],
+                           [atom.Rcoord()[2]] ])
+            res=linalg.solve(vecM, tmp)
+            atom.coord_rel=[float(res[0]),float(res[1]),float(res[2])]
         # open file if present
         if filename == "":
             f=sys.stdout
@@ -79,26 +77,24 @@ class molecule_rw:
                 for i in range(len(self.setup_pwscf.ions)):
                     print >>f, ('{:s}={:s}').format(self.setup_pwscf.ions[i][0],self.setup_pwscf.ions[i][1])
                 print >>f, "/"
-            # print species if present
-            # TODO otherwise calculate them at the beginning
-            if hasattr(self.setup_pwscf, 'species'):
-                print >>f
-                print >>f, "ATOMIC_SPECIES"
-                for i in range(len(self.setup_pwscf.Rspecies() )):
-                    print >>f, ('{:5s} {:11.8f} {:s}').format(self.setup_pwscf.Rspecies()[i][0],
-                                                              self.setup_pwscf.Rspecies()[i][1],
-                                                              self.setup_pwscf.Rspecies()[i][2])
-                print >>f
+        # print atomtypes
+        print >>f
+        print >>f, "ATOMIC_SPECIES"
+        for type in self.typelist():
+             print >>f, ('{:5s} {:11.8f} {:s}').format(self.types()[type[0]][0],
+                                                       self.types()[type[0]][2],
+                                                       self.types()[type[0]][3])
+        print >>f
         # print relative coordinates
         print >>f
         print >>f, "ATOMIC_POSITIONS crystal"
-        for cntat in range(self.Rnatoms()):
+        for atom in self.at():
             print >>f ,(
                 '{:4s} {:15.10f} {:15.10f} {:15.10f}'.format(
-                    self.at[cntat].Rname(),
-                    self.at[cntat].coord_rel[0], 
-                    self.at[cntat].coord_rel[1], 
-                    self.at[cntat].coord_rel[2]
+                    atom.Rname(),
+                    atom.coord_rel[0], 
+                    atom.coord_rel[1], 
+                    atom.coord_rel[2]
                     )
                 )
         print >>f
@@ -139,7 +135,7 @@ class molecule_rw:
             #
             if cntline==1:
                 mol=self.__class__()
-                mol.at=[]
+                mol.clear_atoms()
                 # additional optional fields
                 mol.setup_pwscf=mol.SETUP_PWSCF()
             #
@@ -158,13 +154,13 @@ class molecule_rw:
                     name=linesplit[0]
                     mass=float(linesplit[1])
                     pot=linesplit[2]
-                    mol.setup_pwscf.add_species(name,mass,pot)
+                    mol.set_type(name,mass,pot)
                     ntypes+=1
                 else: opt=""
             # read atoms
             elif opt=="readcoord":
                 if not len(linesplit)==0:
-                    mol.at.append(
+                    mol.append_atom(
                         self.__class__.atom(
                             mol,
                             cntat,
@@ -227,13 +223,13 @@ class molecule_rw:
             #
             if  cntline==1:
                 mol=self.__class__()
-                mol.at=[]
+                mol.clear_atoms()
                 # additional optional fields
                 mol.setup_pwscf=mol.SETUP_PWSCF()        
             if  opt=="readcoord" and cntat==0:
-                if not len(mol.at)==0:
+                if not mol.natoms()==0:
                     mol=self.__class__()
-                    mol.at=[]
+                    mol.clear_atoms()
                     # additional optional fields
                     mol.setup_pwscf=mol.SETUP_PWSCF()
                     # attribute global attributes to molecule
@@ -253,12 +249,12 @@ class molecule_rw:
                 name=linesplit[0]
                 mass=float(linesplit[2])
                 pot=name+".uspp736.pbe.UPF"
-                mol.setup_pwscf.add_species(name,mass,pot)
+                mol.set_type(name,mass,pot)
                 cnttypes+=1
                 if cnttypes==ntypes: opt=""
             # read unitvector
             elif opt=="readcoord":
-                mol.at.append(
+                mol.append_atom(
                     self.__class__.atom(
                         mol,
                         cntat,
@@ -368,14 +364,14 @@ class molecule_rw:
 
 
     def rel2real(self):
-        for i in range(len(self.at)):
+        for atom in self.at():
             coo=[float(0.0),float(0.0),float(0.0)]
             # calculate coordinates
-            for dim in range(len(self.at[i].coord)):
-                coo=calc.vecadd(coo,calc.scal_vecmult(self.at[i].coord[dim],self.vec[dim]))
+            for dim in range(len(atom.coord)):
+                coo=calc.vecadd(coo,calc.scal_vecmult(atom.coord[dim],self.vec[dim]))
             # set relative and real coordinates
-            self.at[i].coord_rel=self.at[i].coord
-            self.at[i].spos(coo[0],coo[1],coo[2])
+            atom.coord_rel=atom.coord
+            atom.spos(coo[0],coo[1],coo[2])
 
     def read_setup_pwscf(self,filename):
         file=open(filename,"r")
@@ -400,14 +396,10 @@ class molecule_rw:
             self.ions=[]
             # kpoints Na Nb Nc Sa Sb Sc
             self.kpoints="1 1 1 0 0 0"
-            # species [name,mass,pseudopot]
-            self.species=[]
             
         #############################################################
         # return functions
         #############################################################                      
-        def Rspecies(self):
-            return self.species
         def Rcelldm(self):
             celldm=1.0
             for i in range(len(system)):
@@ -423,7 +415,4 @@ class molecule_rw:
                 if self.system[0]=="celldm(1)": 
                     self.system[1]=str(celldm)
                     return
-            
-        def add_species(self,name,mass,pseudopot):
-            self.species.append([name,mass,pseudopot])
         

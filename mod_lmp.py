@@ -36,10 +36,10 @@ class molecule_rw:
         print >>f
         print >>f
         # numbers
-        print >>f, ("{:d} atoms".format(mol.Rnatoms()))
+        print >>f, ("{:d} atoms".format(mol.natoms()))
         print >>f
         # types
-        print >>f, ("{:d} atom types".format(mol.Rntypes()))
+        print >>f, ("{:d} atom types".format(mol.ntypes()))
         print >>f
         # vectors
         if not (v[0][1]==0.0 and v[0][2]==0.0 and v[1][2]==0.0):
@@ -52,25 +52,25 @@ class molecule_rw:
         print >>f
         # atomtypes # CHANGE
         print >> f, "Masses"
-        for cnttype in range(mol.Rntypes()):
+        for cnttype in range(mol.ntypes()):
             print >>f ,(
                 '{:6d} {:f} #{:s}'.format(
                     cnttype+1,
-                    self.type_number2weight(mol.Rtypelist()[cnttype]),
-                    self.type_weight2name(self.type_number2weight(mol.Rtypelist()[cnttype])),
+                    self.type_number2weight(mol.typelist()[cnttype][0]),
+                    self.type_weight2name(self.type_number2weight(mol.typelist()[cnttype][0])),
                     )
                 )       
         print >>f
         # atoms
         print >> f, "Atoms"
-        for cntat in range(mol.Rnatoms()):
+        for cntat in range(mol.natoms()):
             print >>f ,(
                 '{:6d} {:4d} {:15.10f} {:15.10f} {:15.10f}'.format(
                     cntat+1, 
-                    mol.at[cntat].Rtid()+1,
-                    mol.at[cntat].Rcoord()[0], 
-                    mol.at[cntat].Rcoord()[1], 
-                    mol.at[cntat].Rcoord()[2]
+                    mol.at()[cntat].Rtid()+1,
+                    mol.at()[cntat].Rcoord()[0], 
+                    mol.at()[cntat].Rcoord()[1], 
+                    mol.at()[cntat].Rcoord()[2]
                     )
                 )
         print >>f
@@ -96,7 +96,7 @@ class molecule_rw:
             # create new molecule
             if (cntline)==1:
                 mol=self.__class__()
-                mol.at=[]
+                mol.clear_atoms()
                 cntat=0
                 cnttype=0
             if len(linesplit)>0 and linesplit[0][0]=="#":
@@ -108,8 +108,7 @@ class molecule_rw:
                 name   = self.local_number2name(tid,local_types)
                 number = self.type_name2number(name)
                 # append atoms
-                mol.at.append(
-                    #cm.molecule.atom(
+                mol.append_atom(
                     self.__class__.atom(
                         mol,
                         cntat,
