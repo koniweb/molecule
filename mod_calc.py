@@ -9,6 +9,7 @@ versiontext='# mod_calc.py version {:.1f}'.format(version)
 #----------------------------------------------------------------------
 import sys
 import math
+import copy
 from operator import itemgetter, attrgetter
 
 #----------------------------------------------------------------------
@@ -20,27 +21,27 @@ ndim=3
 # calculate distance
 def a_dist(at1, at2, per=[0,0,0],dim=3):
     add=[0.0,0.0,0.0]
-    vp=at1.mol.vec
+    vp=at1.parentmol().vec
     perf=[float(per[0]),float(per[1]),float(per[2])]
     add[0] = vp[0][0]*perf[0] + vp[1][0]*perf[1] + vp[2][0]*perf[2]
     add[1] = vp[0][1]*perf[0] + vp[1][1]*perf[1] + vp[2][1]*perf[2]
     add[2] = vp[0][2]*perf[0] + vp[1][2]*perf[1] + vp[2][2]*perf[2]
     d=[0.0 for x in range(0,dim)]
-    for i in range(0,dim): d[i]=(at2.coord[i]-at1.coord[i]+add[i])
+    for i in range(0,dim): d[i]=(at2.coord()[i]-at1.coord()[i]+add[i])
     dxyz = 0.0
     for i in range(0,dim): dxyz = dxyz + d[i]*d[i]
     return math.sqrt(dxyz)
 
 def a_vec(at1,at2,per=[0,0,0]):
     add=[0.0,0.0,0.0]
-    vp=at1.mol.vec
+    vp=at1.parentmol().vec
     perf=[float(per[0]),float(per[1]),float(per[2])]
     add[0] = vp[0][0]*perf[0] + vp[1][0]*perf[1] + vp[2][0]*perf[2]
     add[1] = vp[0][1]*perf[0] + vp[1][1]*perf[1] + vp[2][1]*perf[2]
     add[2] = vp[0][2]*perf[0] + vp[1][2]*perf[1] + vp[2][2]*perf[2]
-    vec=[at2.coord[0]-at1.coord[0]+add[0],
-         at2.coord[1]-at1.coord[1]+add[1],
-         at2.coord[2]-at1.coord[2]+add[2]]
+    vec=[at2.coord()[0]-at1.coord()[0]+add[0],
+         at2.coord()[1]-at1.coord()[1]+add[1],
+         at2.coord()[2]-at1.coord()[2]+add[2]]
     return vec
 
 def length(vec,dim=3):
@@ -93,6 +94,13 @@ def calc_crossproduct3d(vec1,vec2):
     tvec[1] = vec1[2]*vec2[0]-vec1[0]*vec2[2]
     tvec[2] = vec1[0]*vec2[1]-vec1[1]*vec2[0]
     return tvec
+
+def scal_matmult(scal,mat):
+    tmp=copy.deepcopy(mat)
+    for i in range(len(mat)):
+        for j in range(len(mat[0])):
+            tmp[i][j]=scal*mat[i][j]
+    return tmp
 
 def mat2d_inv(mat):
     det= mat[0][0]*mat[1][1]-mat[0][1]*mat[1][0]

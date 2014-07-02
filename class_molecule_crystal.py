@@ -28,7 +28,7 @@ class molecule(cm.molecule):
     def crystal_make(self, mol,mx,my,mz,basis=[[0.0,0.0,0.0]],
                 rota=0.0,rotv=[1.0,0.0,0.0],rotp=[0.0,0.0,0.0]):
         # copy the molecules
-        v=self.Rvec()
+        v=self.vec()
         for ix in range(-mx,mx):
             for iy in range(-my,my):
                 for iz in range(-mz,mz):
@@ -41,7 +41,7 @@ class molecule(cm.molecule):
                             x*v[0][1]+y*v[1][1]+z*v[2][1],
                             x*v[0][2]+y*v[1][2]+z*v[2][2]]
                         self.append_submol(mol,shift,rota,rotv,rotp)
-                        self.mol[self.Rnmol()-1].basis=ib
+                        self.mol[self.nmol()-1].basis=ib
         return
      
     # cut crystal
@@ -51,7 +51,7 @@ class molecule(cm.molecule):
         normal=calc.norm(normal)
         f=(-calc.vecprod(normal,point))
         # loop over molecules
-        for i in range(0,self.Rnmol()):
+        for i in range(self.nmol()):
             for j in range(0,self.mol[i].natoms()):
                 coo=self.mol[i].at()[j].Rcoord()
                 D=(calc.vecprod(normal,coo)+f)/calc.length(normal)

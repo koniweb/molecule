@@ -11,6 +11,7 @@ versiontext='# mod_lmp.py version {:.1f}'.format(version)
 import sys
 import math
 import copy
+import re
 import mod_calc as calc
 
 #----------------------------------------------------------------------
@@ -21,8 +22,8 @@ class molecule_rw:
     def writelmp(self,filename="",status='w'):
         ndim=calc.ndim
         # define vec and offset
-        v=self.Rvec()
-        o=self.Roffset()
+        v=self.vec()
+        o=self.offset()
         # check if vector is correct for lammps
         if not (v[1][0]==0.0 and v[2][0]==0.0 and v[2][1]==0.0): 
             print "vectors are not defined correctly for a lammps file"
@@ -50,14 +51,17 @@ class molecule_rw:
         print >>f, ("{:20.10f} {:20.10f} ylo yhi".format(o[1],v[1][1]+o[1]))
         print >>f, ("{:20.10f} {:20.10f} zlo zhi".format(o[2],v[2][2]+o[2]))
         print >>f
-        # atomtypes # CHANGE
         print >> f, "Masses"
         for cnttype in range(mol.ntypes()):
+            if not self.typelist()[cnttype][1]=="":
+                name=self.typelist()[cnttype][1] # name from typelist              
+            else:
+                name=self.number2element(mol.typelist()[cnttype][0])[0] # name from pse
             print >>f ,(
                 '{:6d} {:f} #{:s}'.format(
                     cnttype+1,
-                    self.type_number2weight(mol.typelist()[cnttype][0]),
-                    self.type_weight2name(self.type_number2weight(mol.typelist()[cnttype][0])),
+                    self.number2element(mol.typelist()[cnttype][0])[2], # weight
+                    name,
                     )
                 )       
         print >>f
@@ -67,10 +71,10 @@ class molecule_rw:
             print >>f ,(
                 '{:6d} {:4d} {:15.10f} {:15.10f} {:15.10f}'.format(
                     cntat+1, 
-                    mol.at()[cntat].Rtid()+1,
-                    mol.at()[cntat].Rcoord()[0], 
-                    mol.at()[cntat].Rcoord()[1], 
-                    mol.at()[cntat].Rcoord()[2]
+                    mol.at()[cntat].tid()+1,
+                    mol.at()[cntat].coord()[0], 
+                    mol.at()[cntat].coord()[1], 
+                    mol.at()[cntat].coord()[2]
                     )
                 )
         print >>f
@@ -84,7 +88,6 @@ class molecule_rw:
         molecules=[]
         tilt=[0.0 for j in range(ndim)]
         vec=[[0.0 for j in range(ndim)] for i in range(ndim)]
-        local_types=[]
         # read file
         file=open(filename, 'r')
         cntline=0
@@ -103,10 +106,15 @@ class molecule_rw:
                 continue
             # read atoms
             if opt=="atoms":
-                # read number and name
+                # find atomtype and so on
                 tid    = int(linesplit[1])
-                name   = self.local_number2name(tid,local_types)
-                number = self.type_name2number(name)
+                # find name and number out of typelist
+                for t in range(len(mol.typelist())):
+                    if int(re.sub("[a-zA-Z]","", mol.typelist()[t][1]))==tid:
+                        name=str(mol.pse()[mol.typelist()[t][0]][0])+str(t+1)
+                        number=t
+                        break
+                print name, number
                 # append atoms
                 mol.append_atom(
                     self.__class__.atom(
@@ -125,7 +133,9 @@ class molecule_rw:
             # read types
             if opt=="masses":
                 # append types
-                local_types.append([int(linesplit[0]),float(linesplit[1])])
+                type=mol.weight2element(float(linesplit[1]))
+                mol.typelist_append(
+                    type[1],type[0]+linesplit[0])
                 # until cnttype==ntypes
                 cnttype+=1
                 if cnttype==ntypes: opt=""
@@ -185,7 +195,7 @@ class molecule_rw:
         vec[2][:]=[ 0.0,       0.0,          z[1]-z[0]    ]
         # finish file and append it
         # set periodicity
-        mol.set_periodicity(vec[0],vec[1],vec[2],[x[0],y[0],z[0]])
+        mol.set_vecs(vec[0],vec[1],vec[2],[x[0],y[0],z[0]])
         # set molecule and append
         mol.set(filename,1,"")
         molecules.append(copy.copy(mol))
@@ -193,16 +203,4 @@ class molecule_rw:
         file.close()
         # return molecules
         return molecules
-    
-    def local_number2name(self,number,local_types):
-        # local_types[type][0] id
-        # local_types[type][2] ~ weight
-        t=local_types
-        name=""
-        weight=0.0
-        for cnt in range(len(t)):
-            if number==t[cnt][0]:
-                weight=t[cnt][1]
-        # get name to return
-        return self.type_weight2name(weight)
 

@@ -26,14 +26,14 @@ class molecule_rw:
             f=open(filename, status)
         mol=self
         print >>f, mol.natoms()
-        print >>f, mol.Rcomment()
+        print >>f, mol.comment()
         for cntat in range(0,mol.natoms()):
             print >>f ,(
                 '{:4s} {:15.10f} {:15.10f} {:15.10f}'.format(
-                    mol.at()[cntat].Rname(), 
-                    mol.at()[cntat].Rcoord()[0], 
-                    mol.at()[cntat].Rcoord()[1], 
-                    mol.at()[cntat].Rcoord()[2]
+                    mol.at()[cntat].type()[0], 
+                    mol.at()[cntat].coord()[0], 
+                    mol.at()[cntat].coord()[1], 
+                    mol.at()[cntat].coord()[2]
                     )
                 )
         f.close()
@@ -70,7 +70,8 @@ class molecule_rw:
                     name=linesplit[0]
                 else:
                     name=linesplit[0]
-                    number=self.type_name2number(name)
+                    number=self.name2element(name)[1]
+
                 # append atoms
                 mol.append_atom(
                     self.__class__.atom(
@@ -94,6 +95,7 @@ class molecule_rw:
                 else:
                     if (cntmol>=start and cntmol<=end):
                         mol.set(filename,cntmol,comment)
+                        mol.set_typelist()
                         molecules.append(copy.copy(mol))
                         oldline=cntline
         # close file

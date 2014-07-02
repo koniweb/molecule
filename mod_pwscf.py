@@ -21,69 +21,68 @@ from numpy import linalg
 # module mod_xyz
 #----------------------------------------------------------------------
 class molecule_rw:
-    def __pwscfinit__(self):
-        self.celldm=float(1.0)
-            
-    #############################################################
-    # return functions
-    #############################################################                      
-    def Rcelldm(self):
-        return self.celldm
-
-    #############################################################
-    # modify functions
-    #############################################################    
-    # set celldm
-    def set_celldm(self,celldm):
-        self.celldm=celldm
-        return
-
     # write pwscf output format
     def writepwscf(self,filename="",status='w'):
         # calculate relative coordinates
-        vecM = matrix( [ [self.Rvec()[0][0],self.Rvec()[1][0],self.Rvec()[2][0]],
-                         [self.Rvec()[0][1],self.Rvec()[1][1],self.Rvec()[2][1]],
-                         [self.Rvec()[0][2],self.Rvec()[1][2],self.Rvec()[2][2]] ])
+        vecM = matrix( [ [self.vec()[0][0],self.vec()[1][0],self.vec()[2][0]],
+                         [self.vec()[0][1],self.vec()[1][1],self.vec()[2][1]],
+                         [self.vec()[0][2],self.vec()[1][2],self.vec()[2][2]] ])
         for atom in self.at():
-            tmp = matrix([ [atom.Rcoord()[0]],
-                           [atom.Rcoord()[1]],
-                           [atom.Rcoord()[2]] ])
+            tmp = matrix([ [atom.coord()[0]],
+                           [atom.coord()[1]],
+                           [atom.coord()[2]] ])
             res=linalg.solve(vecM, tmp)
             atom.coord_rel=[float(res[0]),float(res[1]),float(res[2])]
+        # set options if not set already
+        if not hasattr(self, 'setup_pwscf'):
+            self.setup_pwscf=self.SETUP_PWSCF()
+        # set option celldm in bohr
+        self.setup_pwscf.set_celldm(self.celldm_vec()[0]/calc.b2A)
         # open file if present
         if filename == "":
             f=sys.stdout
         else:
             f=open(filename, status)
         # print options if present
-        if hasattr(self, 'setup_pwscf'):
-            if hasattr(self.setup_pwscf, 'control'):
-                print >>f, "&control"
-                for i in range(len(self.setup_pwscf.control)):
-                    print >>f, ('{:s}={:s}').format(self.setup_pwscf.control[i][0],self.setup_pwscf.control[i][1])
-                print >>f, "/"
-            if hasattr(self.setup_pwscf, 'system'):
-                print >>f, "&system"
-                for i in range(len(self.setup_pwscf.system)):
-                    print >>f, ('{:s}={:s}').format(self.setup_pwscf.system[i][0],self.setup_pwscf.system[i][1])
-                print >>f, "/"
-            if hasattr(self.setup_pwscf, 'electrons'):
-                print >>f, "&electrons"
-                for i in range(len(self.setup_pwscf.electrons)):
-                    print >>f, ('{:s}={:s}').format(self.setup_pwscf.electrons[i][0],self.setup_pwscf.electrons[i][1])
-                print >>f, "/"
-            if hasattr(self.setup_pwscf, 'ions'):
-                print >>f, "&ions"
-                for i in range(len(self.setup_pwscf.ions)):
-                    print >>f, ('{:s}={:s}').format(self.setup_pwscf.ions[i][0],self.setup_pwscf.ions[i][1])
-                print >>f, "/"
+        if hasattr(self.setup_pwscf, 'control'):
+            print >>f, "&control"
+            for i in range(len(self.setup_pwscf.control)):
+                print >>f, ('{:s}={:s}').format(
+                    self.setup_pwscf.control[i][0],
+                    self.setup_pwscf.control[i][1])
+            print >>f, "/"
+        if hasattr(self.setup_pwscf, 'system'):
+            print >>f, "&system"
+            for i in range(len(self.setup_pwscf.system)):
+                print >>f, ('{:s}={:s}').format(
+                    self.setup_pwscf.system[i][0],
+                    self.setup_pwscf.system[i][1])
+            print >>f, "/"
+        if hasattr(self.setup_pwscf, 'electrons'):
+            print >>f, "&electrons"
+            for i in range(len(self.setup_pwscf.electrons)):
+                print >>f, ('{:s}={:s}').format(
+                    self.setup_pwscf.electrons[i][0],
+                    self.setup_pwscf.electrons[i][1])
+            print >>f, "/"
+        if hasattr(self.setup_pwscf, 'ions'):
+            print >>f, "&ions"
+            for i in range(len(self.setup_pwscf.ions)):
+                print >>f, ('{:s}={:s}').format(
+                    self.setup_pwscf.ions[i][0],
+                    self.setup_pwscf.ions[i][1])
+            print >>f, "/"
         # print atomtypes
         print >>f
         print >>f, "ATOMIC_SPECIES"
         for type in self.typelist():
-             print >>f, ('{:5s} {:11.8f} {:s}').format(self.types()[type[0]][0],
-                                                       self.types()[type[0]][2],
-                                                       self.types()[type[0]][3])
+            # check for local name
+            if type[1]=="": name=self.pse()[type[0]][0]
+            else:           name=type[1]
+            print >>f, ('{:5s} {:11.8f} {:s}').format(
+                 name,
+                 self.pse()[type[0]][2],
+                 self.pse()[type[0]][3])
         print >>f
         # print relative coordinates
         print >>f
@@ -91,7 +90,7 @@ class molecule_rw:
         for atom in self.at():
             print >>f ,(
                 '{:4s} {:15.10f} {:15.10f} {:15.10f}'.format(
-                    atom.Rname(),
+                    atom.type()[0],
                     atom.coord_rel[0], 
                     atom.coord_rel[1], 
                     atom.coord_rel[2]
@@ -99,15 +98,15 @@ class molecule_rw:
                 )
         print >>f
         print >>f, "CELL_PARAMETERS"
-        for cntvec in range(0,3):
+        for cntvec in range(3):
             print >>f , (
                 '{:15.10f} {:15.10f} {:15.10f}'.format(
-                    self.Rvec()[cntvec][0]/self.Rcelldm(), 
-                    self.Rvec()[cntvec][1]/self.Rcelldm(), 
-                    self.Rvec()[cntvec][2]/self.Rcelldm()
+                    self.celldm_vec()[1][cntvec][0], 
+                    self.celldm_vec()[1][cntvec][1], 
+                    self.celldm_vec()[1][cntvec][2]
                     )
                 )
-        if hasattr(self,"setup_pwscf") and hasattr(self.setup_pwscf,"kpoints"):
+        if (hasattr(self.setup_pwscf,"kpoints")):
             print >>f
             print >>f, "K_POINTS"
             print >>f , ('{:s}'.format(self.setup_pwscf.kpoints))
@@ -154,7 +153,7 @@ class molecule_rw:
                     name=linesplit[0]
                     mass=float(linesplit[1])
                     pot=linesplit[2]
-                    mol.set_type(name,mass,pot)
+                    mol.set_element(name,mass,pot)
                     ntypes+=1
                 else: opt=""
             # read atoms
@@ -164,12 +163,13 @@ class molecule_rw:
                         self.__class__.atom(
                             mol,
                             cntat,
-                            linesplit[0],0,
+                            linesplit[0],-1,
                             float(linesplit[1]),
                             float(linesplit[2]),
                             float(linesplit[3])
                             )
                         )
+                    # cntat
                     cntat+=1
                     natoms=cntat
                 else: opt=""
@@ -181,16 +181,17 @@ class molecule_rw:
         # set data
         #
         # set celldm
+        set=False
         for i in range(len(mol.setup_pwscf.system)):
             if mol.setup_pwscf.system[i][0]=="celldm(1)": 
                 celldm=float(mol.setup_pwscf.system[i][1])
-                mol.set_celldm(celldm*calc.b2A)
-                mol.setup_pwscf.set_celldm(celldm)
-        # set vector correctly
-        for i in range(len(vec)):
-            vec[i]=calc.scal_vecmult(mol.Rcelldm(),vec[i])
-        # set periodicity
-        mol.set_periodicity(vec[0],vec[1],vec[2])
+                set=True
+        if set==False:
+            celldm=float(1.0)
+        mol.set_celldm(celldm*calc.b2A)    # in A
+        mol.setup_pwscf.set_celldm(celldm) # in bohr
+        # set vector
+        mol.set_vecs(vec[0],vec[1],vec[2])
         # set real coordinates
         mol.rel2real()
         # set molecule and append
@@ -232,8 +233,6 @@ class molecule_rw:
                     mol.clear_atoms()
                     # additional optional fields
                     mol.setup_pwscf=mol.SETUP_PWSCF()
-                    # attribute global attributes to molecule
-                    mol.set_celldm(celldm*calc.b2A)
             #
             # Do READ IN
             #
@@ -249,34 +248,37 @@ class molecule_rw:
                 name=linesplit[0]
                 mass=float(linesplit[2])
                 pot=name+".uspp736.pbe.UPF"
-                mol.set_type(name,mass,pot)
+                mol.set_element(name,mass,pot)
                 cnttypes+=1
                 if cnttypes==ntypes: opt=""
             # read unitvector
             elif opt=="readcoord":
+                # append atom
                 mol.append_atom(
                     self.__class__.atom(
                         mol,
                         cntat,
-                        linesplit[0],0,
+                        linesplit[0],-1,
                         float(linesplit[1]),
                         float(linesplit[2]),
                         float(linesplit[3])
                         )
                     )
+                # cntat
                 cntat+=1
                 if int(cntat)==int(natoms): 
                     opt=""
-                    cntat=0
-                    # append mol to molecules
+                    cntat=0                   
+                    # set celldm
+                    mol.set_celldm(celldm*calc.b2A)    # in A
+                    mol.setup_pwscf.set_celldm(celldm) # in bohr
                     # set periodicity
-                    mol.set_periodicity(calc.scal_vecmult(mol.Rcelldm(),vec[0]) ,
-                                        calc.scal_vecmult(mol.Rcelldm(),vec[1]) ,
-                                        calc.scal_vecmult(mol.Rcelldm(),vec[2]) )
+                    mol.set_vecs(vec[0],vec[1],vec[2])
                     # set real coordinates
                     mol.rel2real()
                     # set molecule and append
                     mol.set(filename,1,"")
+                    # append mol to molecules
                     molecules.append(copy.copy(mol))
             # read input options
             elif opt=="":
@@ -287,7 +289,6 @@ class molecule_rw:
                 elif len(linesplit)>1 and linesplit[0]=="celldm(1)=":
                     celldm=(float(linesplit[1])*calc.b2A)
                     mol.set_celldm(celldm*calc.b2A)
-
             #
             # read main options
             #
@@ -367,11 +368,13 @@ class molecule_rw:
         for atom in self.at():
             coo=[float(0.0),float(0.0),float(0.0)]
             # calculate coordinates
-            for dim in range(len(atom.coord)):
-                coo=calc.vecadd(coo,calc.scal_vecmult(atom.coord[dim],self.vec[dim]))
+            for dim in range(len(atom.coord())):
+                coo=calc.vecadd(coo,calc.scal_vecmult(
+                    atom.coord()[dim],self.vec()[dim])
+                )
             # set relative and real coordinates
-            atom.coord_rel=atom.coord
-            atom.spos(coo[0],coo[1],coo[2])
+            atom.coord_rel=atom.coord()
+            atom.set_pos(coo)
 
     def read_setup_pwscf(self,filename):
         file=open(filename,"r")
@@ -411,8 +414,12 @@ class molecule_rw:
         #############################################################    
         def set_celldm(self,celldm):
             # IN BOHR
+            set=False
             for i in range(len(self.system)):
                 if self.system[0]=="celldm(1)": 
                     self.system[1]=str(celldm)
-                    return
+                    set=True
+            if set==False:
+                self.system.append(["celldm(1)",str(celldm)])
+            return
         

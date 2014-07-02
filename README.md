@@ -15,9 +15,3 @@ mod_pwscf.py	  --  &&                             (pwscf input and output)
 mod_xyz.py        --  &&                             (xyz)
 
 class_molecule.py -- extention to class_molecule.py to cut nanocrystals
- 
-# TODO
-change vec to __vec
-change offset to __offset
-change Rvec() to vec()
-change Roffset() to offset()

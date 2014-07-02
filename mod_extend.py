@@ -28,7 +28,7 @@ class molecule_extend():
     #############################################################
     # return functions
     ############################################################# 
-    def Rnmol(self):
+    def nmol(self):
         return len(self.mol)
 
     #############################################################
@@ -40,16 +40,18 @@ class molecule_extend():
             self.mol=[]
             # shift data
             self.mol.append(self.__class__())
-            self.mol[0].set_atomlist(copy.deepcopy( self.at() ))
-            self.mol[0].file          = self.file
-            self.mol[0].filemolnumber = self.filemolnumber
-            self.mol[0].vec           = self.vec
-            self.mol[0].set_id        ( self.id() )
-            self.mol[0].set_typelist  ( self.typelist() )
+            self.mol[0].set               (copy.deepcopy(self.file()),
+                                           copy.deepcopy(self.filemolnumber()),
+                                           copy.deepcopy(self.comment()))
+            self.mol[0].set_id            ( copy.deepcopy(self.id()) )
+            self.mol[0].set_atomlist      ( copy.deepcopy( self.at() ))
+            self.mol[0].set_typelist2list ( copy.deepcopy(self.typelist()) )
+            self.mol[0].set_vecs          (copy.deepcopy(self.vec()[0]),
+                                           copy.deepcopy(self.vec()[1]),
+                                           copy.deepcopy(self.vec()[2]),
+                                           copy.deepcopy(self.offset()) )
             # delete data
-            self.file=""
-            self.filenumber=0
-            self.comment=0
+            self.set("",0,"")
             self.clear_atoms()
             # print info
             self.extend_set()
@@ -66,7 +68,7 @@ class molecule_extend():
             # make new list
             for i in range(self.natoms()):
                 self.at.append(self.at()[i])
-            for i in range(len(self.mol)):
+            for i in range(self.nmol()):
                 for j in range(len(self.mol[i].at())):
                     self.append_atom(self.mol[i].at()[j])
             return
@@ -77,27 +79,37 @@ class molecule_extend():
     def append_submol(self,molecule,shiftv=[0.0,0.0,0.0],
                 rotangle=0.0,rota=[1.0,0.0,0.0],rotp=[0.0,0.0,0.0]):
         # molecule information
-        molid=len(self.mol)
+        molid=self.nmol()
         if hasattr(self,"mol"):
             # rotate and shift molecules
-            molecule.rot(rotangle,rota[0],rota[1],rota[2],rotp[0],rotp[1],rotp[2])
+            molecule.rot(rotangle,
+                         rota[0],rota[1],rota[2],
+                         rotp[0],rotp[1],rotp[2])
             molecule.shift(shiftv[0],shiftv[1],shiftv[2])
             # create new submolecule and copy data
             self.mol.append(self.__class__())
             self.mol[molid].set_id(molid)   # ID
             self.mol[molid].shiftvec=shiftv # shiftvec
-            self.mol[molid].vec=copy.deepcopy(molecule.vec)
+            self.mol[molid].set_vecs(copy.deepcopy(molecule.vec()[0],),
+                                     copy.deepcopy(molecule.vec()[1],),
+                                     copy.deepcopy(molecule.vec()[2],))
             # copy atoms
             for i in range (molecule.natoms()):
                 at=molecule.at()[i]
                 self.mol[molid].append_atom(
-                    self.__class__.atom(self.mol[molid],i,at.name,at.number,
-                                        at.coord[0],at.coord[1],at.coord[2],
-                                        at.mult[0],at.mult[1],at.mult[2],
-                                        at.charge)
+                    self.__class__.atom(self.mol[molid],i,
+                                        at.type()[0],
+                                        at.type()[1],
+                                        at.coord()[0],
+                                        at.coord()[1],
+                                        at.coord()[2],
+                                        at.mult()[0],
+                                        at.mult()[1],
+                                        at.mult()[2],
+                                        at.charge())
                     )
-            # set new submolecule
-            self.mol[molid].set()
+            ## set new submolecule
+            #self.mol[molid].set_typelist()
             # shift and rotate back     
             molecule.shift(-shiftv[0],-shiftv[1],-shiftv[2])
             molecule.rot(-rotangle,rota[0],rota[1],rota[2],rotp[0],rotp[1],rotp[2])
@@ -111,7 +123,7 @@ class molecule_extend():
     def mol_multiply(self,mx,my,mz):
         if not hasattr(self,"mol"): self.extend()
         # copy the molecules
-        v=self.vec
+        v=self.vec()
         for ix in range(0,mx):
             for iy in range(0,my):
                 for iz in range(0,mz):
@@ -121,12 +133,13 @@ class molecule_extend():
                     shift=[x*v[0][0]+y*v[1][0]+z*v[2][0],
                            x*v[0][1]+y*v[1][1]+z*v[2][1],
                            x*v[0][2]+y*v[1][2]+z*v[2][2]]
-                    if not(x==0 and y==0 and z==0): self.append_submol(self.mol[0],shift)
+                    if not(x==0 and y==0 and z==0): 
+                        self.append_submol(self.mol[0],shift)
         return
 
     #remove submolecules
     def rm_submol(self,del_id):
-        for i in range(0, len(self.mol)):
+        for i in range(self.nmol()):
             if del_id==self.mol[i].id():
                 self.mol.pop(i)
                 break
@@ -136,8 +149,8 @@ class molecule_extend():
     # rot all submolecules in list
     def mol_rot(self,angle,ax,ay,az,px,py,pz,lst=[]):
         if lst==[]:
-            lst=xrange(1,len(self.mol))
-        for imol in range(1,len(self.mol)):
+            lst=xrange(1,self.nmol())
+        for imol in range(1,self.nmol()):
             if self.mol[imol].id() in lst:
                 s=self.mol[imol].shiftvec
                 self.mol[imol].rot(angle,ax,ay,az,px+s[0],py+s[1],pz+s[2])
@@ -146,7 +159,7 @@ class molecule_extend():
     # subgroup atoms
     def atoms_into_submol(self,idlist):
         if hasattr(self,"mol"):
-            molid=len(self.mol)
+            molid=self.nmol()
             self.mol.append(self.__class__())
             # search for all atoms in idlist
             for idcnt in range(0,len(idlist)):
@@ -157,7 +170,9 @@ class molecule_extend():
                     m=self.mol
                     if m[0].at()[iat].id() == idlist[idcnt]:
                         m[molid].append_atom_cp(m[0].at()[iat])
-                        m[molid].at()[len(m[molid].at)-1].mol=m[molid]
+                        m[molid].at()[
+                            m[molid].natoms()-1
+                        ].set_parentmol(m[molid])
                         # pop atom list
                         found=True
                         self.mol[0].at().pop(iat)
@@ -167,7 +182,7 @@ class molecule_extend():
                     print >> sys.stderr, ('...atoms not found').format()
                     exit()
             # set shiftvec in molecule
-            self.mol[molid].shiftvec=self.mol[molid].at()[0].coord
+            self.mol[molid].shiftvec=self.mol[molid].at()[0].coord()
         else:
             print >> sys.stderr, ('...molecule has to be extended').format()
             exit()
