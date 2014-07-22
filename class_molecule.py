@@ -152,7 +152,6 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         if bool(type)==False: type=self.name2element(name)
         if bool(type)==False: type=self.name2element(re.sub("[a-zA-Z]","",name))
         if bool(type)==False: type=self.number2element(number)
-        print type,name
         if bool(type):
             if [type[1],name] not in self.typelist():
                 self.typelist_append(type[1],name)
@@ -424,6 +423,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         #############################################################
         # return functions
         #############################################################
+
         def atom(self):
             return self.__atom
 

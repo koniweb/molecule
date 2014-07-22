@@ -135,6 +135,10 @@ class molecule_extend():
                            x*v[0][2]+y*v[1][2]+z*v[2][2]]
                     if not(x==0 and y==0 and z==0): 
                         self.append_submol(self.mol[0],shift)
+        # reset vectors
+        self.set_vecs(calc.scal_vecmult(mx,self.celldm_vec()[1][0]),
+                      calc.scal_vecmult(my,self.celldm_vec()[1][1]),
+                      calc.scal_vecmult(mz,self.celldm_vec()[1][2]))
         return
 
     #remove submolecules
