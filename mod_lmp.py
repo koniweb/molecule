@@ -52,6 +52,7 @@ class molecule_rw:
         print >>f, ("{:20.10f} {:20.10f} zlo zhi".format(o[2],v[2][2]+o[2]))
         print >>f
         print >> f, "Masses"
+        print >> f
         for cnttype in range(mol.ntypes()):
             if not self.typelist()[cnttype][1]=="":
                 name=self.typelist()[cnttype][1] # name from typelist              
@@ -67,6 +68,7 @@ class molecule_rw:
         print >>f
         # atoms
         print >> f, "Atoms"
+        print >> f
         for cntat in range(mol.natoms()):
             print >>f ,(
                 '{:6d} {:4d} {:15.10f} {:15.10f} {:15.10f}'.format(
