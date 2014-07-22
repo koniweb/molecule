@@ -38,6 +38,7 @@ class molecule_rw:
             self.setup_pwscf=self.SETUP_PWSCF()
         # set option celldm in bohr
         self.setup_pwscf.set_celldm(self.celldm_vec()[0]/calc.b2A)
+        self.setup_pwscf.set_nat(self.natoms())
         # open file if present
         if filename == "":
             f=sys.stdout
@@ -415,11 +416,25 @@ class molecule_rw:
         def set_celldm(self,celldm):
             # IN BOHR
             set=False
+            # find celldm in system
             for i in range(len(self.system)):
-                if self.system[0]=="celldm(1)": 
-                    self.system[1]=str(celldm)
+                if self.system[i][0]=="celldm(1)": 
+                    self.system[i][1]=str(celldm)
                     set=True
+            # if it is not in there add it
             if set==False:
                 self.system.append(["celldm(1)",str(celldm)])
+            return
+        
+        def set_nat(self,nat):
+            set=False
+            # find nat in system
+            for i in range(len(self.system)):
+                if self.system[i][0]=="nat": 
+                    self.system[i][1]=str(nat)
+                    set=True
+            # if it is not in there add it
+            if set==False:
+                self.system.append(["nat",str(nat)])
             return
         
