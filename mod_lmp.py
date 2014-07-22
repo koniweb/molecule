@@ -25,7 +25,7 @@ class molecule_rw:
         v=self.vec()
         o=self.offset()
         # check if vector is correct for lammps
-        if not (v[1][0]==0.0 and v[2][0]==0.0 and v[2][1]==0.0): 
+        if not (v[0][1]==0.0 or v[0][2]==0.0 or v[1][2]==0.0): 
             print "vectors are not defined correctly for a lammps file"
             quit()
         # open file if present
@@ -43,8 +43,8 @@ class molecule_rw:
         print >>f, ("{:d} atom types".format(mol.ntypes()))
         print >>f
         # vectors
-        if not (v[0][1]==0.0 and v[0][2]==0.0 and v[1][2]==0.0):
-            print >>f, ("{:f} {:f} {:f} xy xz yz".format(v[0][1],v[0][2],v[1][2]))
+        if not (v[1][0]==0.0 and v[2][0]==0.0 and v[2][1]==0.0):
+            print >>f, ("{:f} {:f} {:f} xy xz yz".format(v[1][0],v[2][0],v[2][1]))
             print >>f
         # offset
         print >>f, ("{:20.10f} {:20.10f} xlo xhi".format(o[0],v[0][0]+o[0]))
