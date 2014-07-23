@@ -4,7 +4,7 @@
 # readfpwscfin
 # readfpwscfout
 ##########################################################################
-version=1.0
+version=1.1
 versiontext='# mod_pwscf.py version {:.1f}'.format(version)
 #----------------------------------------------------------------------
 # import
@@ -39,6 +39,7 @@ class molecule_rw:
         # set option celldm in bohr
         self.setup_pwscf.set_celldm(self.celldm_vec()[0]/calc.b2A)
         self.setup_pwscf.set_nat(self.natoms())
+        self.setup_pwscf.set_ntyp(self.ntypes())
         # open file if present
         if filename == "":
             f=sys.stdout
@@ -436,5 +437,17 @@ class molecule_rw:
             # if it is not in there add it
             if set==False:
                 self.system.append(["nat",str(nat)])
+            return
+
+        def set_ntypes(self,ntypes):
+            set=False
+            # find ntypes in system
+            for i in range(len(self.system)):
+                if self.system[i][0]=="ntyp": 
+                    self.system[i][1]=str(ntypes)
+                    set=True
+            # if it is not in there add it
+            if set==False:
+                self.system.append(["ntyp",str(ntypes)])
             return
         
