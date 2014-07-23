@@ -439,7 +439,7 @@ class molecule_rw:
                 self.system.append(["nat",str(nat)])
             return
 
-        def set_ntypes(self,ntypes):
+        def set_ntyp(self,ntypes):
             set=False
             # find ntypes in system
             for i in range(len(self.system)):
