@@ -104,7 +104,11 @@ class molecule_rw:
                 mol.clear_atoms()
                 cntat=0
                 cnttype=0
+            # check commented lines
             if len(linesplit)>0 and linesplit[0][0]=="#":
+                continue
+            # check for empty lines
+            if len(linesplit)==0:
                 continue
             # read atoms
             if opt=="atoms":
@@ -136,6 +140,9 @@ class molecule_rw:
             if opt=="masses":
                 # append types
                 type=mol.weight2element(float(linesplit[1]))
+                if len(type)==0: 
+                    print "ERROR: type could not be found"
+                    exit()
                 mol.typelist_append(
                     type[1],type[0]+linesplit[0])
                 # until cnttype==ntypes
