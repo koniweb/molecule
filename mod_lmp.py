@@ -120,7 +120,6 @@ class molecule_rw:
                         name=str(mol.pse()[mol.typelist()[t][0]][0])+str(t+1)
                         number=t
                         break
-                print name, number
                 # append atoms
                 mol.append_atom(
                     self.__class__.atom(
