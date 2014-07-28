@@ -66,7 +66,10 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         # set atom list
         self.__at=[]
         self.__celldm=1.0
-        self.__vec=[[0.0 for x in xrange(0,ndim)]for x in xrange(0,ndim)]
+        self.__vec=[[0.0 for x in xrange(0,ndim)]for x in xrange(0,ndim)] 
+        # vec[0]: a
+        # vec[1]: b
+        # vec[2]: c
         self.__offset=[0.0,0.0,0.0]
 
     #############################################################
@@ -133,7 +136,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
     def weight2element(self,weight):
         returndata=[]
         for ielement in self.pse():
-            if weight==ielement[2]: returndata=ielement
+            if float(weight)==float(ielement[2]): returndata=ielement
         return returndata
     #############################################################
     # set functions

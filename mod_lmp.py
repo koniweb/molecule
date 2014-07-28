@@ -89,7 +89,6 @@ class molecule_rw:
         # set molecule
         molecules=[]
         tilt=[0.0 for j in range(ndim)]
-        vec=[[0.0 for j in range(ndim)] for i in range(ndim)]
         # read file
         file=open(filename, 'r')
         cntline=0
@@ -198,9 +197,10 @@ class molecule_rw:
                 if linesplit[3:6]==["xy","xz","yz"]:
                     tilt=[float(linesplit[0]),float(linesplit[1]),float(linesplit[2])]
         # calculate vectors a,b,c out of the box and tilt
-        vec[0][:]=[ x[1]-x[0], tilt[0],      tilt[1]      ]
-        vec[1][:]=[ 0.0,       y[1]-y[0],    tilt[2]      ]
-        vec[2][:]=[ 0.0,       0.0,          z[1]-z[0]    ]
+        vec=[]
+        vec.append([ x[1]-x[0], 0.0,       0.0])
+        vec.append([ tilt[0],   y[1]-y[0], 0.0])
+        vec.append([ tilt[1],   tilt[2],   z[1]-z[0] ])
         # finish file and append it
         # set periodicity
         mol.set_vecs(vec[0],vec[1],vec[2],[x[0],y[0],z[0]])
