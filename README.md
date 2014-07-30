@@ -17,3 +17,8 @@ It contains:
 additional module files
 =========================
 class_molecule.py -- extention to class_molecule.py to cut nanocrystals
+
+To Do
+=====
+- [ ] correct additional numbering in xyz output
+- [X] add additional read write flags for lammps in and output

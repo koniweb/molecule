@@ -19,7 +19,7 @@ import mod_calc as calc
 #----------------------------------------------------------------------
 class molecule_rw:
     # write lammps file
-    def writelmp(self,filename="",status='w'):
+    def writelmp(self,filename="",status='w',lcharge=False,lmoltype=False):
         ndim=calc.ndim
         # define vec and offset
         v=self.vec()
@@ -70,25 +70,39 @@ class molecule_rw:
         print >> f, "Atoms"
         print >> f
         for cntat in range(mol.natoms()):
+            a=mol.at()[cntat]
+            moltype=""
+            charge=""
+            if lcharge:  charge="{:15.10f}".format(a.charge()) 
+            if lmoltype: moltype='{:4d}'.format(1)
             print >>f ,(
-                '{:6d} {:4d} {:15.10f} {:15.10f} {:15.10f}'.format(
-                    cntat+1, 
-                    mol.at()[cntat].tid()+1,
-                    mol.at()[cntat].coord()[0], 
-                    mol.at()[cntat].coord()[1], 
-                    mol.at()[cntat].coord()[2]
-                    )
+                '{:6d} {:s} {:4d} {:s} {:15.10f} {:15.10f} {:15.10f}'.format(
+                    cntat+1, moltype, a.tid()+1, charge, a.coord()[0], a.coord()[1], a.coord()[2])
                 )
+            
         print >>f
         f.close()
         return
     
     # read molecules in lammps file
-    def readlmp(self,filename):
+    def readlmp(self,filename,lcharge=False,lmoltype=False):
         ndim=calc.ndim
         # set molecule
+        moltype=0
+        charge=0.0
         molecules=[]
         tilt=[0.0 for j in range(ndim)]
+        # set columns to read in
+        ctid=1
+        ccoord=2
+        if lcharge: 
+            ccharge=2
+            ccoord+=1
+        if lmoltype: 
+            cmoltype=1
+            ccoord+=1
+            ctid+=1
+            ccharge+=1
         # read file
         file=open(filename, 'r')
         cntline=0
@@ -112,13 +126,17 @@ class molecule_rw:
             # read atoms
             if opt=="atoms":
                 # find atomtype and so on
-                tid    = int(linesplit[1])
+                tid    = int(linesplit[ctid])
                 # find name and number out of typelist
                 for t in range(len(mol.typelist())):
                     if int(re.sub("[a-zA-Z]","", mol.typelist()[t][1]))==tid:
                         name=str(mol.pse()[mol.typelist()[t][0]][0])+str(t+1)
                         number=t
                         break
+                # read charge
+                if lcharge: charge=float(linesplit[ccharge])
+                # read molid
+                if lmoltype: moltype=int(linesplit[cmoltype])
                 # append atoms
                 mol.append_atom(
                     self.__class__.atom(
@@ -126,10 +144,11 @@ class molecule_rw:
                         cntat,
                         name,
                         number,
-                        float(linesplit[2]),
-                        float(linesplit[3]),
-                        float(linesplit[4]),
-                        tid=tid-1
+                        float(linesplit[ccoord+0]),
+                        float(linesplit[ccoord+1]),
+                        float(linesplit[ccoord+2]),
+                        tid=tid-1,
+                        atomcharge=charge
                         )
                     )
                 cntat+=1
