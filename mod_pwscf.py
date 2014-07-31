@@ -289,8 +289,7 @@ class molecule_rw:
                 elif len(linesplit)>3 and linesplit[0:4]==["number","of","atomic","types"]:
                     ntypes=int(linesplit[5])                        
                 elif len(linesplit)>1 and linesplit[0]=="celldm(1)=":
-                    celldm=(float(linesplit[1])*calc.b2A)
-                    mol.set_celldm(celldm*calc.b2A)
+                    celldm=(float(linesplit[1]))
             #
             # read main options
             #
