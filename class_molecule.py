@@ -24,20 +24,40 @@ pse=[
     # pse[element][2] ~ weight
     # pse[element][3] pseudopotential
         ["X",  0, 0.0,"pseudopotential"],
+        # first row
         ["H",  1, 1.0079, "PSEUDO"], ["He",2,4.0026,   "PSEUDO"],
-        
+
+        # second row
         ["Li", 3, 6.941,  "PSEUDO"], ["Be", 4, 9.0122, "PSEUDO"], 
         ["B" , 5,10.811,  "PSEUDO"], ["C" , 6,12.0107, "PSEUDO"], ["N" , 7,14.007, "PSEUDO"], 
         ["O" , 8,15.999,  "PSEUDO"], ["F" , 9,18.998,  "PSEUDO"], ["Ne",10,20.18,  "PSEUDO"],
         
-        ["Na",11,22.99,   "PSEUDO"], ["Mg",12,24.305,  "PSEUDO"],  
-        ["Al",13,26.982,  "PSEUDO"], ["Si",14,28.086,  "PSEUDO"], ["P" ,15,30.974, "PSEUDO"], 
-        ["S", 16,32.065,  "PSEUDO"], ["Cl",17,35.453,  "PSEUDO"], ["Ar",18,39.948, "PSEUDO"],
+        # third row
+        ["Na",11, 22.99,   "PSEUDO"], ["Mg",12, 24.305,  "PSEUDO"],  
+        ["Al",13, 26.982,  "PSEUDO"], ["Si",14, 28.086,  "PSEUDO"], ["P" ,15, 30.974, "PSEUDO"], 
+        ["S", 16, 32.065,  "PSEUDO"], ["Cl",17, 35.453,  "PSEUDO"], ["Ar",18, 39.948, "PSEUDO"],
+        
+        # fourth row
+        ["K", 19, 39.098,  "PSEUDO"], ["Ca",20, 40.078,  "PSEUDO"], 
+        # transition metals
+        ["Sc",21, 44.956,  "PSEUDO"], ["Ti",22, 47.867,  "PSEUDO"], ["V" ,23, 50.942, "PSEUDO"], 
+        ["Cr",24, 51.996,  "PSEUDO"], ["Mn",25, 54.938,  "PSEUDO"], ["Fe",26, 55.845, "PSEUDO"], 
+        ["Co",27, 58.933,  "PSEUDO"], ["Ni",28, 58.693,  "PSEUDO"], ["Cu",29, 63.546, "PSEUDO"], 
+        ["Zn",30, 65.380,  "PSEUDO"], 
+        # transition metals end
+        ["Ga",31, 69.723,  "PSEUDO"], ["Ge",32, 72.640,  "PSEUDO"], ["As",33, 74.922, "PSEUDO"], 
+        ["Se",34, 78.96,   "PSEUDO"], ["Br",35, 79.904,  "PSEUDO"], ["Kr",36, 83.798, "PSEUDO"],
 
-        ["K", 19,39.098,  "PSEUDO"], ["Ca",20,40.078,  "PSEUDO"], 
-        # row transition metals
-        ["Ga",31,69.723,  "PSEUDO"], ["Ge",32,72.64,   "PSEUDO"], ["As",33,74.922, "PSEUDO"], 
-        ["Se",34,78.96,   "PSEUDO"], ["Br",35,79.904,  "PSEUDO"], ["Kr",36,83.798, "PSEUDO"]
+        # fifth row
+        ["Rb",37, 85.468,  "PSEUDO"], ["Sr",38, 87.620,  "PSEUDO"], 
+        # transition metals
+        ["Y" ,39, 88.906,  "PSEUDO"], ["Zr",40, 91.224,  "PSEUDO"], ["Nb",41, 92.906, "PSEUDO"], 
+        ["Mo",42, 95.960,  "PSEUDO"], ["Tc",43, 97.900,  "PSEUDO"], ["Ru",44,101.070, "PSEUDO"], 
+        ["Rh",45,102.910,  "PSEUDO"], ["Pd",46,106.420,  "PSEUDO"], ["Ag",47,107.870, "PSEUDO"], 
+        ["Cd",48,112.410,  "PSEUDO"], 
+        # transition metals end
+        ["In",49,114.820,  "PSEUDO"], ["Sn",50,118.710,  "PSEUDO"], ["Sb",51,121.760, "PSEUDO"], 
+        ["Te",52,127.600,  "PSEUDO"], ["I" ,53,126.900,  "PSEUDO"], ["Xe",54,131.290, "PSEUDO"]        
         ]
 #----------------------------------------------------------------------
 # classes
