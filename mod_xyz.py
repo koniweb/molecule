@@ -36,7 +36,7 @@ class molecule_rw:
                     mol.at()[cntat].coord()[2]
                     )
                 )
-        f.close()
+        if filename != "": f.close()
         return
     
     # read molecules in xyz file
