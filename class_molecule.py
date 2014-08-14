@@ -253,13 +253,18 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
     def set_celldm(self,length):
         self.__celldm=float(length)
 
+    # set comment
+    def set_comment(self,comment):
+        self.__comment=comment
+        return    
+
     # set natoms ntypes and filename
     def set(self,filename="",filemolnumber=0,comment=""):
         self.__file=filename
         self.__filemolnumber=filemolnumber
-        self.__comment=comment
-        # get ntypes
+        self.set_comment(comment)
         return
+
     #############################################################
     # modify functions
     #############################################################    
