@@ -11,7 +11,6 @@ versiontext='# mod_xyz.py version {:.1f}'.format(version)
 import sys
 import math
 import copy
-#import class_molecule_disloc as cm #del
 
 #----------------------------------------------------------------------
 # module mod_xyz

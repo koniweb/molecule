@@ -51,7 +51,7 @@ class molecule_extend():
                                            copy.deepcopy(self.vec()[2]),
                                            copy.deepcopy(self.offset()) )
             # delete data
-            self.set("",0,"")
+            #self.set("",0,"")
             self.clear_atoms()
             # print info
             self.extend_set()
