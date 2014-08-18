@@ -238,12 +238,29 @@ class molecule_rw:
             #
             # Do READ IN
             #
-            # read vectors
+            # read vectors after CELL_PARAMETERS
             if  opt=="readvec":
+                # delete old vector
+                if cntvec==0: vec=[]
+                # read vector
                 vec.append([float(linesplit[0]),
                             float(linesplit[1]),
                             float(linesplit[2])])
                 cntvec+=1
+                # set option and cntvec to zero after vectors are read
+                if cntvec==3: 
+                    opt=""
+                    cntvec=0
+            # read vectors after crystal axes
+            if  opt=="readcrys":
+                # delete old vector
+                if cntvec==0: vec=[]
+                # read vector
+                vec.append([float(linesplit[3]),
+                            float(linesplit[4]),
+                            float(linesplit[5])])
+                cntvec+=1
+                # set option and cntvec to zero after vectors are read
                 if cntvec==3: 
                     opt=""
                     cntvec=0
@@ -278,7 +295,6 @@ class molecule_rw:
                     mol.setup_pwscf.set_celldm(celldm) # in bohr
                     # set periodicity
                     mol.set_vecs(vec[0],vec[1],vec[2])
-                    vec=[]
                     # set real coordinates
                     mol.rel2real()
                     # set molecule and append
@@ -304,6 +320,9 @@ class molecule_rw:
                     opt="readcoord"
                 elif option=="CELL_PARAMETERS":
                     opt="readvec"
+                elif option=="crystal" and linesplit[1]=="axes:":
+                    opt="readcrys"
+
         # close file
         file.close()
         # return molecules
