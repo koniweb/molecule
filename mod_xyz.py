@@ -39,7 +39,8 @@ class molecule_rw:
         return
     
     # read molecules in xyz file
-    def readxyz(self,filename,start=-1,end=-1):
+    def readxyz(self,filename,start=1,end=-1):
+        # only last molecule via start=-1 and end=-1
         # set molecule
         molecules=[]
         # read file
@@ -87,16 +88,15 @@ class molecule_rw:
             # finish molecule and append to list
             if (cntline-oldline)%(natoms+2)==0: 
                 cntmol+=1
-                if end==-1 and start==-1:
+                if start!=-1 and (  
+                    (cntmol>=start and (cntmol<=end or end==-1))  ):
                     mol.set(filename,cntmol,comment)
                     molecules.append(copy.copy(mol))
                     oldline=cntline
-                else:
-                    if (cntmol>=start and cntmol<=end):
-                        mol.set(filename,cntmol,comment)
-                        mol.set_typelist()
-                        molecules.append(copy.copy(mol))
-                        oldline=cntline
+        # if start==-1 add last frame only
+        if start==-1:
+            mol.set(filename,cntmol,comment)
+            molecules.append(copy.copy(mol))
         # close file
         file.close()
         # return molecules
