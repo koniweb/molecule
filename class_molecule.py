@@ -195,17 +195,25 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         self.__at=[]
 
     # append atom
-    def append_atom_coo(self,type,x,y,z):
+    def append_atom_coo(self,type,x,y,z,pos=-1):
+        # if position is -1 append atom at the end
+        if pos==-1:pos=self.natoms()
+        # append atom
         i=len(self.at())
-        if type.isdigit(): self.__at.append(self.atom(self,i,""  ,int(type),
-                                                      float(x),float(y),float(z)))
-        else:              self.__at.append(self.atom(self,i,type,-1       ,
-                                                      float(x),float(y),float(z)))
+        if type.isdigit(): self.__at.insert(pos, self.atom(
+                self,i,""  ,int(type),
+                float(x),float(y),float(z)))
+        else:              self.__at.insert(pos,self.atom(
+                self,i,type,-1       ,
+                float(x),float(y),float(z)))
         return
 
     # append an instance atom
-    def append_atom_cp(self,addat):
-        self.__at.append(self.atom(addat.mol(),
+    def append_atom_cp(self,addat,pos=-1):
+        # if position is -1 append atom
+        if pos==-1:pos=self.natoms()
+        # insert atom at position
+        self.__at.insert(pos,self.atom(addat.mol(),
                                    addat.id(),
                                    addat.type()[0],
                                    addat.type()[1],
@@ -220,8 +228,12 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         return
 
     # append atom
-    def append_atom(self,atom):
-        self.__at.append(atom)
+    def append_atom(self,atom,pos=-1):
+        # if position is -1 append atom
+        if pos==-1:pos=self.natoms()
+        # insert atom at position
+        self.__at.insert(pos,atom)
+        return
 
     # set type in pse
     def set_element(self,identification,mass=-1.0,pseudopotential=""):
@@ -235,6 +247,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         # correct mass
         if mass>0.0:
             self.__pse[tid][2]=float(mass)
+        return
 
     # set periodicity vectors separately
     def set_vecs(self,a=[0.0,0.0,0.0],b=[0.0,0.0,0.0],
