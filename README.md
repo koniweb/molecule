@@ -25,4 +25,4 @@ To Do
 =====
 - [ ] correct additional numbering in xyz output
 - [X] add additional read write flags for lammps in and output
-- [ ] allow for extended xyz output
+- [X] allow for extended xyz output
