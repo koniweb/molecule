@@ -240,11 +240,13 @@ class molecule_rw:
             #
             # read vectors
             if  opt=="readvec":
-                vec.append([float(linesplit[3]),
-                            float(linesplit[4]),
-                            float(linesplit[5])])
+                vec.append([float(linesplit[0]),
+                            float(linesplit[1]),
+                            float(linesplit[2])])
                 cntvec+=1
-                if cntvec==3: opt=""
+                if cntvec==3: 
+                    opt=""
+                    cntvec=0
             # read coordinates
             if  opt=="readspecies":
                 name=linesplit[0]
@@ -276,6 +278,7 @@ class molecule_rw:
                     mol.setup_pwscf.set_celldm(celldm) # in bohr
                     # set periodicity
                     mol.set_vecs(vec[0],vec[1],vec[2])
+                    vec=[]
                     # set real coordinates
                     mol.rel2real()
                     # set molecule and append
@@ -299,7 +302,7 @@ class molecule_rw:
                     opt="readspecies"
                 elif option=="ATOMIC_POSITIONS":
                     opt="readcoord"
-                elif option=="crystal" and linesplit[1]=="axes:":
+                elif option=="CELL_PARAMETERS":
                     opt="readvec"
         # close file
         file.close()
