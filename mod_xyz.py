@@ -38,6 +38,47 @@ class molecule_rw:
         if filename != "": f.close()
         return
     
+    # write extended xyz file
+    def writeexyz(self,filename="",status='w',data=[]):
+        # open file if present
+        if filename == "":
+            f=sys.stdout
+        else:
+            f=open(filename, status)
+        mol=self
+        # data contains a list of data for each atom and the text
+        # -> do more convenient
+        if len(data)==0:
+            data=["",[""]*self.natoms()]
+        # add vectors to commentline
+        a=""
+        b=""
+        c=""
+        if mol.vec()[0]!=[0.0,0.0,0.0]:
+            a="a {:15.10f} {:15.10f} {:15.10f}".format(
+                mol.vec()[0][0],mol.vec()[0][1],mol.vec()[0][2])
+        if mol.vec()[1]!=[0.0,0.0,0.0]:
+            b="b {:15.10f} {:15.10f} {:15.10f}".format(
+                mol.vec()[1][0],mol.vec()[1][1],mol.vec()[1][2])
+        if mol.vec()[2]!=[0.0,0.0,0.0]:
+            c="c {:15.10f} {:15.10f} {:15.10f}".format(
+                mol.vec()[2][0],mol.vec()[2][1],mol.vec()[2][2])
+        # print output
+        print >>f, mol.natoms()
+        print >>f, "{:s} {:s} {:s} {:s}".format(a,b,c,data[0]) 
+        for cntat in range(0,mol.natoms()):
+            print >>f ,(
+                '{:4s} {:15.10f} {:15.10f} {:15.10f} {:s}'.format(
+                    mol.at()[cntat].type()[0], 
+                    mol.at()[cntat].coord()[0], 
+                    mol.at()[cntat].coord()[1], 
+                    mol.at()[cntat].coord()[2],
+                    data[1][cntat]
+                    )
+                )
+        if filename != "": f.close()
+        return
+
     # read molecules in xyz file
     def readxyz(self,filename,start=1,end=-1):
         # only last molecule via start=-1 and end=-1
