@@ -19,9 +19,10 @@ mod_xyz.py        | modules to read and write files (xyz)
 
 additional module files
 =========================
-class_molecule.py -- extention to class_molecule.py to cut nanocrystals
+class_molecule_crystal.py -- extention to class_molecule.py to cut nanocrystals
 
 To Do
 =====
 - [ ] correct additional numbering in xyz output
 - [X] add additional read write flags for lammps in and output
+- [ ] allow for extended xyz output
