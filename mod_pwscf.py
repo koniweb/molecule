@@ -271,7 +271,9 @@ class molecule_rw:
                 pot=name+".uspp736.pbe.UPF"
                 mol.set_element(name,mass,pot)
                 cnttypes+=1
-                if cnttypes==ntypes: opt=""
+                if cnttypes==ntypes: 
+                    opt=""
+                    cnttypes=0
             # read unitvector
             elif opt=="readcoord":
                 # append atom
