@@ -63,9 +63,12 @@ class molecule_rw:
         if mol.vec()[2]!=[0.0,0.0,0.0]:
             c="c {:15.10f} {:15.10f} {:15.10f}".format(
                 mol.vec()[2][0],mol.vec()[2][1],mol.vec()[2][2])
+        # add energy to comment line
+        E=""
+        if mol.energy()!=0.0:E="E {:.15f}".format(mol.energy())
         # print output
         print >>f, mol.natoms()
-        print >>f, "{:s} {:s} {:s} {:s}".format(a,b,c,data[0]) 
+        print >>f, "{:s} {:s} {:s} {:s} {:s}".format(a,b,c,E,data[0]) 
         for cntat in range(0,mol.natoms()):
             print >>f ,(
                 '{:4s} {:15.10f} {:15.10f} {:15.10f} {:s}'.format(
