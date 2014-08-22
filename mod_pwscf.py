@@ -224,13 +224,15 @@ class molecule_rw:
             #
             # create new molecule
             #
-            if  cntline==1:
+            # first vector readin or standart vector readin
+            if cntline==1:
                 mol=self.__class__()
                 mol.clear_atoms()
                 # additional optional fields
-                mol.setup_pwscf=mol.SETUP_PWSCF()        
-            if  opt=="readcoord" and cntat==0:
-                if not mol.natoms()==0:
+                mol.setup_pwscf=mol.SETUP_PWSCF()
+            if opt=="endmol":
+                opt=""
+                if cntline==1 or not mol.natoms()==0:
                     mol=self.__class__()
                     mol.clear_atoms()
                     # additional optional fields
@@ -251,8 +253,8 @@ class molecule_rw:
                 if cntvec==3: 
                     opt=""
                     cntvec=0
-            # read vectors after crystal axes
-            if  opt=="readcrys":
+            # read vectors after crystal axes (0. step)
+            if  opt=="readvec0":
                 # delete old vector
                 if cntvec==0: vec=[]
                 # read vector
@@ -264,7 +266,7 @@ class molecule_rw:
                 if cntvec==3: 
                     opt=""
                     cntvec=0
-            # read coordinates
+            # read species
             if  opt=="readspecies":
                 name=linesplit[0]
                 mass=float(linesplit[2])
@@ -274,7 +276,7 @@ class molecule_rw:
                 if cnttypes==ntypes: 
                     opt=""
                     cnttypes=0
-            # read unitvector
+            # read coordinates of atoms ATOMIC_POSITIONS
             elif opt=="readcoord":
                 # append atom
                 mol.append_atom(
@@ -292,17 +294,47 @@ class molecule_rw:
                 if int(cntat)==int(natoms): 
                     opt=""
                     cntat=0                   
-                    # set celldm
-                    mol.set_celldm(celldm*calc.b2A)    # in A
-                    mol.setup_pwscf.set_celldm(celldm) # in bohr
-                    # set periodicity
-                    mol.set_vecs(vec[0],vec[1],vec[2])
-                    # set real coordinates
-                    mol.rel2real()
-                    # set molecule and append
-                    mol.set(filename,1,"")
-                    # append mol to molecules
-                    molecules.append(copy.copy(mol))
+            # read coordinates of atoms "atom positions" (0. step)
+            elif opt=="readcoord0":
+                # append atom
+                mol.append_atom(
+                    self.__class__.atom(
+                        mol,
+                        cntat,
+                        linesplit[1],-1,
+                        float(linesplit[6]),
+                        float(linesplit[7]),
+                        float(linesplit[8])
+                        )
+                    )
+                # cntat
+                cntat+=1
+                if int(cntat)==int(natoms): 
+                    opt=""
+                    cntat=0                   
+            # read energy
+            elif opt=="" and len(linesplit)>0 and linesplit[0]=="!":
+                # read energy and set it
+                E=float(linesplit[4])
+                mol.set_energy(E)
+                #
+                # set all molecule features
+                #
+                # set celldm
+                mol.set_celldm(celldm*calc.b2A)    # in A
+                mol.setup_pwscf.set_celldm(celldm) # in bohr
+                # set periodicity
+                mol.set_vecs(vec[0],vec[1],vec[2])
+                # set real coordinates
+                mol.rel2real()
+                # set molecule and append
+                mol.set(filename,1,"")
+                # append mol to molecules
+                molecules.append(copy.copy(mol))
+                #
+                # print info that molecule is finished
+                #
+                opt="endmol"
             # read input options
             elif opt=="":
                 if   len(linesplit)>1 and linesplit[0:3]==["number","of","atoms/cell"]:
@@ -320,10 +352,12 @@ class molecule_rw:
                     opt="readspecies"
                 elif option=="ATOMIC_POSITIONS":
                     opt="readcoord"
+                elif len(linesplit)>3 and linesplit[2]=="atom" and linesplit[3]=="positions":
+                    opt="readcoord0"
                 elif option=="CELL_PARAMETERS":
                     opt="readvec"
                 elif option=="crystal" and linesplit[1]=="axes:":
-                    opt="readcrys"
+                    opt="readvec0"
 
         # close file
         file.close()

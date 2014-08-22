@@ -91,6 +91,8 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         # vec[1]: b
         # vec[2]: c
         self.__offset=[0.0,0.0,0.0]
+        # energy
+        self.__energy=0.0
 
     #############################################################
     # return functions
@@ -158,6 +160,11 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         for ielement in self.pse():
             if float(weight)==float(ielement[2]): returndata=ielement
         return returndata
+
+    # return energy
+    def energy(self):
+        return self.__energy
+
     #############################################################
     # set functions
     #############################################################    
@@ -276,6 +283,11 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         self.__file=filename
         self.__filemolnumber=filemolnumber
         self.set_comment(comment)
+        return
+
+    # set energy
+    def set_energy(self,energy):
+        self.__energy=float(energy)
         return
 
     #############################################################
