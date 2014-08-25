@@ -103,8 +103,13 @@ class molecule_rw:
             ccoord+=1
             ctid+=1
             ccharge+=1
+        # check read file
+        try: 
+            file=open(filename, 'r')
+        except IOError:
+            print >> sys.stderr, "...input file not found"
+            exit()
         # read file
-        file=open(filename, 'r')
         cntline=0
         natoms=0
         opt=""

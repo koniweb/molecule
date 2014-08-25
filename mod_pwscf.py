@@ -122,8 +122,13 @@ class molecule_rw:
         natoms=0
         ntypes=0
         vec=[]
+        # check read file
+        try: 
+            file=open(filename, 'r')
+        except IOError:
+            print >> sys.stderr, "...input file not found"
+            exit()
         # read file
-        file=open(filename, 'r')
         opt=""
         cntline=0
         cntvec=0

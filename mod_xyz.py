@@ -45,6 +45,7 @@ class molecule_rw:
             f=sys.stdout
         else:
             f=open(filename, status)
+            
         mol=self
         # data contains a list of data for each atom and the text
         # -> do more convenient
@@ -87,8 +88,13 @@ class molecule_rw:
         # only last molecule via start=-1 and end=-1
         # set molecule
         molecules=[]
+        # check read file
+        try: 
+            file=open(filename, 'r')
+        except IOError:
+            print >> sys.stderr, "...input file not found"
+            exit()
         # read file
-        file=open(filename, 'r')
         cntline=0
         oldline=0
         natoms=0
