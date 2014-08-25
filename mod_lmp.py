@@ -26,7 +26,7 @@ class molecule_rw:
         o=self.offset()
         # check if vector is correct for lammps
         if not (v[0][1]==0.0 or v[0][2]==0.0 or v[1][2]==0.0): 
-            print "vectors are not defined correctly for a lammps file"
+            print >> sys.stderr, "vectors are not defined correctly for a lammps file"
             quit()
         # open file if present
         if filename == "":
@@ -163,7 +163,7 @@ class molecule_rw:
                 # append types
                 type=mol.weight2element(float(linesplit[1]))
                 if len(type)==0: 
-                    print "ERROR: type could not be found"
+                    print >> sys.stderr, "ERROR: type could not be found"
                     exit()
                 mol.typelist_append(
                     type[1],type[0]+linesplit[0])

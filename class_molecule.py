@@ -314,7 +314,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         if end <= 0: 
             end = self.natoms() + end
             if end <=0: end = self.natoms()
-        print 'setting atom {:d} - {:d} type {:d} ...'.format(st,end,type)
+        print >> sys.stderr, 'setting atom {:d} - {:d} type {:d} ...'.format(st,end,type)
         for cntat in range(st,end):
             self.at()[cntat].set_number(int(type))
         return
@@ -324,7 +324,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         if end <= 0: 
             end = self.natoms() + end
             if end <=0: end = self.natoms()
-        print 'setting atom {:d} - {:d} name {:s} ...'.format(st,end,name)
+        print >> sys.stderr, 'setting atom {:d} - {:d} name {:s} ...'.format(st,end,name)
         for cntat in range(st,end):
             self.at()[cntat].set_name(name)
         return

@@ -63,6 +63,6 @@ class molecule(cm.molecule):
         # pop molecules
         for popi in range(0,len(poplist)):
             self.rm_submol(poplist[popi])            
-        print ('... {:5d} molecules popped').format(len(poplist))
+        print >> sys.stderr, ('... {:5d} molecules popped').format(len(poplist))
         return
 
