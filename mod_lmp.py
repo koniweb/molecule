@@ -107,7 +107,7 @@ class molecule_rw:
         try: 
             file=open(filename, 'r')
         except IOError:
-            print >> sys.stderr, "...input file not found"
+            print >> sys.stderr, "... input file not found"
             exit()
         # read file
         cntline=0

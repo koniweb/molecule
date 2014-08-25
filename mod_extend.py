@@ -183,11 +183,11 @@ class molecule_extend():
                         break
                 # check if atom found
                 if not found:
-                    print >> sys.stderr, ('...atoms not found').format()
+                    print >> sys.stderr, ('... atoms not found').format()
                     exit()
             # set shiftvec in molecule
             self.mol[molid].shiftvec=self.mol[molid].at()[0].coord()
         else:
-            print >> sys.stderr, ('...molecule has to be extended').format()
+            print >> sys.stderr, ('... molecule has to be extended').format()
             exit()
         return
