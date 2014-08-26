@@ -30,5 +30,7 @@ To Do
 - [ ] correct additional numbering in xyz output
 - [X] add additional read write flags for lammps in and output
 - [X] allow for extended xyz output
-- [ ] allow extended xyz input
-- [ ] combine extended and normal xyz read and write
+- [X] allow extended xyz input
+- [X] combine extended and normal xyz read
+- [X] combine extended and normal xyz write
+- [ ] extended xyz write also take stored data of atoms in molecule

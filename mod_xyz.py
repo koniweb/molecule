@@ -17,62 +17,26 @@ import copy
 #----------------------------------------------------------------------
 class molecule_rw:
     # write xyz file
-    def writexyz(self,filename="",status='w'):
+    def writexyz(self,filename="",status='w',extended=False,data=[]):
         # open file if present
         if filename == "":
             f=sys.stdout
         else:
             f=open(filename, status)
         mol=self
-        print >>f, mol.natoms()
-        print >>f, mol.comment()
-        for cntat in range(0,mol.natoms()):
-            print >>f ,(
-                '{:4s} {:15.10f} {:15.10f} {:15.10f}'.format(
-                    mol.at()[cntat].type()[0], 
-                    mol.at()[cntat].coord()[0], 
-                    mol.at()[cntat].coord()[1], 
-                    mol.at()[cntat].coord()[2]
-                    )
-                )
-        if filename != "": f.close()
-        return
-    
-    # write extended xyz file
-    def writeexyz(self,filename="",status='w',data=[]):
-        # open file if present
-        if filename == "":
-            f=sys.stdout
+        if extended==False: data=["",[""]*self.natoms()]
+        # EXTENDED
         else:
-            f=open(filename, status)
-            
-        mol=self
-        # data contains a list of data for each atom and the text
-        # -> do more convenient
-        if len(data)==0:
-            data=["",[""]*self.natoms()]
-        # add vectors to commentline
-        a=""
-        b=""
-        c=""
-        if mol.vec()[0]!=[0.0,0.0,0.0]:
-            a="a {:15.10f} {:15.10f} {:15.10f}".format(
-                mol.vec()[0][0],mol.vec()[0][1],mol.vec()[0][2])
-        if mol.vec()[1]!=[0.0,0.0,0.0]:
-            b="b {:15.10f} {:15.10f} {:15.10f}".format(
-                mol.vec()[1][0],mol.vec()[1][1],mol.vec()[1][2])
-        if mol.vec()[2]!=[0.0,0.0,0.0]:
-            c="c {:15.10f} {:15.10f} {:15.10f}".format(
-                mol.vec()[2][0],mol.vec()[2][1],mol.vec()[2][2])
-        if mol.offset()!=[0.0,0.0,0.0]:
-            off="off {:15.10f} {:15.10f} {:15.10f}".format(
-                mol.offset()[0],mol.offset()[1],mol.offset()[2])
-        # add energy to comment line
-        E=""
-        if mol.energy()!=0.0:E="E {:.15f}".format(mol.energy())
+            # empty data field
+            if len(data)==0:
+                data=["",[""]*self.natoms()]
+            # create commentline
+            mol.set_comment(mol.exyz_writecomment(data))
+            # add data to data array if not already done
+            # TODO
         # print output
         print >>f, mol.natoms()
-        print >>f, "{:s} {:s} {:s} {:s} {:s} {:s}".format(a,b,c,off,E,data[0]) 
+        print >>f, mol.comment()
         for cntat in range(0,mol.natoms()):
             print >>f ,(
                 '{:4s} {:15.10f} {:15.10f} {:15.10f} {:s}'.format(
@@ -116,7 +80,7 @@ class molecule_rw:
                 comment=line.strip()
                 # EXTENDED
                 # strip comment, set molecule and append it
-                if extended: exyzdata=mol.exyz_comment(comment)
+                if extended: exyzdata=mol.exyz_readcomment(comment)
             # read atoms
             if ((cntline-oldline)%(natoms+2) >= 3 or 
                 (cntline-oldline)%(natoms+2) == 0 ):
@@ -161,7 +125,7 @@ class molecule_rw:
         # return molecules
         return molecules
 
-    def exyz_comment(self,comment):
+    def exyz_readcomment(self,comment):
         commentsplit=comment.split(" ")
         exyzdata=[""]
         i=0
@@ -217,4 +181,28 @@ class molecule_rw:
             print >> sys.stderr, "... extended xyz data not present"
             exit()
         return
-            
+
+    def exyz_writecomment(self,exyzdata):
+        # add vectors to commentline
+        a=""
+        b=""
+        c=""
+        off=""
+        if self.vec()[0]!=[0.0,0.0,0.0]:
+            a="a {:15.10f} {:15.10f} {:15.10f}".format(
+                self.vec()[0][0],self.vec()[0][1],self.vec()[0][2])
+        if self.vec()[1]!=[0.0,0.0,0.0]:
+            b="b {:15.10f} {:15.10f} {:15.10f}".format(
+                self.vec()[1][0],self.vec()[1][1],self.vec()[1][2])
+        if self.vec()[2]!=[0.0,0.0,0.0]:
+            c="c {:15.10f} {:15.10f} {:15.10f}".format(
+                self.vec()[2][0],self.vec()[2][1],self.vec()[2][2])
+        if self.offset()!=[0.0,0.0,0.0]:
+            off="off {:15.10f} {:15.10f} {:15.10f}".format(
+                self.offset()[0],self.offset()[1],self.offset()[2])
+        # add energy to comment line
+        E=""
+        if self.energy()!=0.0:E="E {:.15f}".format(self.energy())
+        # return comment line
+        return "{:s} {:s} {:s} {:s} {:s} {:s}".format(a,b,c,off,E,exyzdata[0]) 
+
