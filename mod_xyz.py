@@ -64,12 +64,15 @@ class molecule_rw:
         if mol.vec()[2]!=[0.0,0.0,0.0]:
             c="c {:15.10f} {:15.10f} {:15.10f}".format(
                 mol.vec()[2][0],mol.vec()[2][1],mol.vec()[2][2])
+        if mol.offset()!=[0.0,0.0,0.0]:
+            off="off {:15.10f} {:15.10f} {:15.10f}".format(
+                mol.offset()[0],mol.offset()[1],mol.offset()[2])
         # add energy to comment line
         E=""
         if mol.energy()!=0.0:E="E {:.15f}".format(mol.energy())
         # print output
         print >>f, mol.natoms()
-        print >>f, "{:s} {:s} {:s} {:s} {:s}".format(a,b,c,E,data[0]) 
+        print >>f, "{:s} {:s} {:s} {:s} {:s} {:s}".format(a,b,c,off,E,data[0]) 
         for cntat in range(0,mol.natoms()):
             print >>f ,(
                 '{:4s} {:15.10f} {:15.10f} {:15.10f} {:s}'.format(
@@ -84,7 +87,7 @@ class molecule_rw:
         return
 
     # read molecules in xyz file
-    def readxyz(self,filename,start=1,end=-1):
+    def readxyz(self,filename,start=1,end=-1,extended=False):
         # only last molecule via start=-1 and end=-1
         # set molecule
         molecules=[]
@@ -110,7 +113,10 @@ class molecule_rw:
                 natoms=int(linesplit[0])
             # save comment
             if (cntline-oldline)%(natoms+2)==2:
-                comment=line.strip('\n')
+                comment=line.strip()
+                # EXTENDED
+                # strip comment, set molecule and append it
+                if extended: exyzdata=mol.exyz_comment(comment)
             # read atoms
             if ((cntline-oldline)%(natoms+2) >= 3 or 
                 (cntline-oldline)%(natoms+2) == 0 ):
@@ -134,6 +140,9 @@ class molecule_rw:
                         float(linesplit[3])
                         )
                     )
+                # EXTENDED
+                # read exyz data
+                if extended: mol.exyz_readdata(linesplit,exyzdata)
                 cntat+=1
             # finish molecule and append to list
             if (cntline-oldline)%(natoms+2)==0: 
@@ -151,73 +160,61 @@ class molecule_rw:
         file.close()
         # return molecules
         return molecules
-    
-    # read extended xyz
-    def readexyz(self,filename,start=1,end=-1):
-        # only last molecule via start=-1 and end=-1
-        # set molecule
-        molecules=[]
-        # check read file
-        try: 
-            file=open(filename, 'r')
-        except IOError:
-            print >> sys.stderr, "... input file not found"
+
+    def exyz_comment(self,comment):
+        commentsplit=comment.split(" ")
+        exyzdata=[""]
+        i=0
+        while i<len(commentsplit):
+            str=commentsplit[i]
+            # select data for molecule
+            if str=="E":
+                self.set_energy(float(commentsplit[i+1]))
+                i+=1
+            elif str=="a":
+                self.set_vecs(a=[float(commentsplit[i+1]), 
+                                 float(commentsplit[i+2]), 
+                                 float(commentsplit[i+3])]
+                              )
+                i+=3
+            elif str=="b":
+                self.set_vecs(b=[float(commentsplit[i+1]), 
+                                 float(commentsplit[i+2]), 
+                                 float(commentsplit[i+3])]
+                              )
+                i+=3
+            elif str=="c":
+                self.set_vecs(c=[float(commentsplit[i+1]), 
+                                 float(commentsplit[i+2]), 
+                                 float(commentsplit[i+3])]
+                              )
+                i+=3
+            elif str=="off":
+                self.set_vecs(off=[float(commentsplit[i+1]), 
+                                   float(commentsplit[i+2]), 
+                                   float(commentsplit[i+3])]
+                              )
+                i+=3
+            # select data per atom
+            else:
+                exyzdata[0]=exyzdata[0].join(str)
+            i+=1
+        return exyzdata
+
+    def exyz_readdata(self,linesplit,exyzdata):
+        # 0:   Atomtype
+        # 1-3: Coordinates
+        # get datafields to fill
+        Dsplit=exyzdata[0].split(" ")
+        # check if all data is there
+        if len(Dsplit)==len(linesplit)-4:           
+            for i in range(len(Dsplit)):
+                if Dsplit[i]=="charge":
+                    self.at()[self.natoms()-1].set_charge(float(linesplit[i+4]))
+                #elif Dsplit[i]=="datavaluename""
+                #   self.at()[self.natoms()-1].set_datavaluename(float(linesplit[i+4]))
+        else:
+            print >> sys.stderr, "... extended xyz data not present"
             exit()
-        # read file
-        cntline=0
-        oldline=0
-        natoms=0
-        cntmol=0
-        for line in file:
-            cntline+=1
-            linesplit=line.split()
-            # create new molecule
-            if (cntline-oldline)%(natoms+2)==1:
-                mol=self.__class__()
-                mol.clear_atoms()
-                cntat=0
-                natoms=int(linesplit[0])
-            # save comment
-            if (cntline-oldline)%(natoms+2)==2:
-                comment=line.strip('\n')
-                # strip comment appart
-            # read atoms
-            if ((cntline-oldline)%(natoms+2) >= 3 or 
-                (cntline-oldline)%(natoms+2) == 0 ):
-                # check if number or atomtype given
-                if linesplit[0].isdigit():
-                    number=int(linesplit[0])
-                    name=linesplit[0]
-                else:
-                    name=linesplit[0]
-                    number=self.name2element(name)[1]
-
-                # append atoms
-                mol.append_atom(
-                    self.__class__.atom(
-                        mol,
-                        cntat,
-                        name,
-                        number,
-                        float(linesplit[1]),
-                        float(linesplit[2]),
-                        float(linesplit[3])
-                        )
-                    )
-                cntat+=1
-            # finish molecule and append to list
-            if (cntline-oldline)%(natoms+2)==0: 
-                cntmol+=1
-                oldline=cntline
-                if start!=-1 and (  
-                    (cntmol>=start and (cntmol<=end or end==-1))  ):
-                    mol.set(filename,cntmol,comment)
-                    molecules.append(copy.copy(mol))
-        # if start==-1 add last frame only
-        if start==-1:
-            mol.set(filename,cntmol,comment)
-            molecules.append(copy.copy(mol))
-        # close file
-        file.close()
-        # return molecules
-        return molecules
+        return
+            
