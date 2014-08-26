@@ -152,3 +152,72 @@ class molecule_rw:
         # return molecules
         return molecules
     
+    # read extended xyz
+    def readexyz(self,filename,start=1,end=-1):
+        # only last molecule via start=-1 and end=-1
+        # set molecule
+        molecules=[]
+        # check read file
+        try: 
+            file=open(filename, 'r')
+        except IOError:
+            print >> sys.stderr, "... input file not found"
+            exit()
+        # read file
+        cntline=0
+        oldline=0
+        natoms=0
+        cntmol=0
+        for line in file:
+            cntline+=1
+            linesplit=line.split()
+            # create new molecule
+            if (cntline-oldline)%(natoms+2)==1:
+                mol=self.__class__()
+                mol.clear_atoms()
+                cntat=0
+                natoms=int(linesplit[0])
+            # save comment
+            if (cntline-oldline)%(natoms+2)==2:
+                comment=line.strip('\n')
+                # strip comment appart
+            # read atoms
+            if ((cntline-oldline)%(natoms+2) >= 3 or 
+                (cntline-oldline)%(natoms+2) == 0 ):
+                # check if number or atomtype given
+                if linesplit[0].isdigit():
+                    number=int(linesplit[0])
+                    name=linesplit[0]
+                else:
+                    name=linesplit[0]
+                    number=self.name2element(name)[1]
+
+                # append atoms
+                mol.append_atom(
+                    self.__class__.atom(
+                        mol,
+                        cntat,
+                        name,
+                        number,
+                        float(linesplit[1]),
+                        float(linesplit[2]),
+                        float(linesplit[3])
+                        )
+                    )
+                cntat+=1
+            # finish molecule and append to list
+            if (cntline-oldline)%(natoms+2)==0: 
+                cntmol+=1
+                oldline=cntline
+                if start!=-1 and (  
+                    (cntmol>=start and (cntmol<=end or end==-1))  ):
+                    mol.set(filename,cntmol,comment)
+                    molecules.append(copy.copy(mol))
+        # if start==-1 add last frame only
+        if start==-1:
+            mol.set(filename,cntmol,comment)
+            molecules.append(copy.copy(mol))
+        # close file
+        file.close()
+        # return molecules
+        return molecules

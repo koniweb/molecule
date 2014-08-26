@@ -7,7 +7,8 @@ do analysis.
 
 It is in principle the basis for analysis codes.  
   
-It contains:
+It contains:  
+
 file              | comment
 :-----------------|:-----------------------------------------
 class_molecule.py | main module file with molecule class
@@ -26,3 +27,5 @@ To Do
 - [ ] correct additional numbering in xyz output
 - [X] add additional read write flags for lammps in and output
 - [X] allow for extended xyz output
+- [ ] allow extended xyz input
+- [ ] combine extended and normal xyz read and write
