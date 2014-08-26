@@ -455,6 +455,10 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         def set_parentmol(self,mol):
             self.__parentmol=mol
 
+        # set charge of atom
+        def set_charge(self,charge):
+            self.__charge==charge
+
         #############################################################
         # modify functions
         #############################################################   
