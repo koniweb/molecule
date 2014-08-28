@@ -32,7 +32,7 @@ class molecule_rw:
                            [atom.coord()[1]],
                            [atom.coord()[2]] ])
             res=linalg.solve(vecM, tmp)
-            atom.coord_rel=[float(res[0]),float(res[1]),float(res[2])]
+            atom.coord_crystal=[float(res[0]),float(res[1]),float(res[2])]
         # set options if not set already
         if not hasattr(self, 'setup_pwscf'):
             self.setup_pwscf=self.SETUP_PWSCF()
@@ -93,9 +93,9 @@ class molecule_rw:
             print >>f ,(
                 '{:4s} {:15.10f} {:15.10f} {:15.10f}'.format(
                     atom.type()[0],
-                    atom.coord_rel[0], 
-                    atom.coord_rel[1], 
-                    atom.coord_rel[2]
+                    atom.coord_crystal[0], 
+                    atom.coord_crystal[1], 
+                    atom.coord_crystal[2]
                     )
                 )
         print >>f
@@ -200,7 +200,7 @@ class molecule_rw:
         # set vector
         mol.set_vecs(vec[0],vec[1],vec[2])
         # set real coordinates
-        mol.rel2real()
+        mol.crystal2angstroem()
         # set molecule and append
         mol.set(filename,1,"")
         molecules.append(copy.copy(mol))
@@ -223,6 +223,7 @@ class molecule_rw:
         cntat=0
         cntvec=0
         cnttypes=0
+        cntmol=0
         for line in file:
             cntline+=1
             linesplit=line.split()
@@ -299,6 +300,7 @@ class molecule_rw:
                 if int(cntat)==int(natoms): 
                     opt=""
                     cntat=0                   
+                    cntmol+=1
             # read coordinates of atoms "atom positions" (0. step)
             elif opt=="readcoord0":
                 # append atom
@@ -331,7 +333,9 @@ class molecule_rw:
                 # set periodicity
                 mol.set_vecs(vec[0],vec[1],vec[2])
                 # set real coordinates
-                mol.rel2real()
+                if cntmol==0: mol.alat2angstroem()
+                else:         mol.crystal2angstroem()
+
                 # set molecule and append
                 mol.set(filename,1,"")
                 # append mol to molecules
@@ -426,9 +430,7 @@ class molecule_rw:
         # return internal keywords
         return opt
         
-
-
-    def rel2real(self):
+    def crystal2angstroem(self):
         for atom in self.at():
             coo=[float(0.0),float(0.0),float(0.0)]
             # calculate coordinates
@@ -437,7 +439,16 @@ class molecule_rw:
                     atom.coord()[dim],self.vec()[dim])
                 )
             # set relative and real coordinates
-            atom.coord_rel=atom.coord()
+            atom.coord_crystal=atom.coord()
+            atom.set_pos(coo)
+
+    def alat2angstroem(self):
+        for atom in self.at():
+            coo=[float(0.0),float(0.0),float(0.0)]
+            # calculate coordinates
+            coo=calc.scal_vecmult(self.celldm_vec()[0],atom.coord())
+            # set relative and real coordinates
+            atom.coord_crystal=atom.coord()
             atom.set_pos(coo)
 
     def read_setup_pwscf(self,filename):
