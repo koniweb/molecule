@@ -29,21 +29,14 @@ class molecule_rw:
         else:
             # empty data field
             if len(data)==0:
-                data=["",[""]*self.natoms()]
-            # if only name of variable added
-            elif len(data)==1:
-                data.append([""]*self.natoms())
+                data.append(["",[""]*self.natoms()])
             # add data to data array if not already done
-            di=[0,0]
-            if   (len(data[1][0])==0 and len(data[0].split(" "))>0):      
-                di=[0,len(data[0].split(" "))]
-            elif (len(data[0].split(" "))>len(data[1][0].split(" "))):
-                di=[len(data[1][0].split(" ")),len(data[0].split(" "))]
-            # loop over data
-            for i in range(di[0],di[1]):
-                # loop over atoms get data
-                for iat in range(self.natoms()):
-                    data[1][iat]="   ".join([data[1][iat],str(getattr(self.at()[iat],data[0].split(" ")[i])())])
+            for val in data:
+                if len(val)==1:
+                    val.append([""]*self.natoms())
+                    # loop over atoms get data
+                    for iat in range(self.natoms()):
+                        val[1][iat]=str(  getattr(self.at()[iat],str(val[0]))()  )
             # create commentline
             mol.set_comment(mol.exyz_writecomment(data))
         # print output
@@ -56,7 +49,7 @@ class molecule_rw:
                     mol.at()[cntat].coord()[0], 
                     mol.at()[cntat].coord()[1], 
                     mol.at()[cntat].coord()[2],
-                    data[1][cntat]
+                    " ".join([row[1][cntat] for row in data])
                     )
                 )
         if filename != "": f.close()
@@ -140,7 +133,7 @@ class molecule_rw:
     def exyz_readcomment(self,comment):
         commentsplit=comment.strip().split(" ")
         commentsplit.remove('')
-        exyzdata=[""]
+        exyzdata=[]
         i=0
         while i<len(commentsplit):
             str=commentsplit[i]
@@ -174,7 +167,7 @@ class molecule_rw:
                 i+=3
             # select data per atom
             else:
-                exyzdata[0]=" ".join([exyzdata[0],str])
+                exyzdata.append(str)
             i+=1
         return exyzdata
 
@@ -182,7 +175,7 @@ class molecule_rw:
         # 0:   Atomtype
         # 1-3: Coordinates
         # get datafields to fill
-        Dsplit=exyzdata[0].strip().split(" ")
+        Dsplit=[row[0] for row in exyzdata]
         # check if all data is there
         if len(Dsplit)==len(linesplit)-4:           
             for i in range(len(Dsplit)):
@@ -217,5 +210,5 @@ class molecule_rw:
         E=""
         if self.energy()!=0.0:E="E {:.15f}".format(self.energy())
         # return comment line
-        return "{:s} {:s} {:s} {:s} {:s} {:s}".format(a,b,c,off,E,exyzdata[0]).strip()
+        return "{:s} {:s} {:s} {:s} {:s} {:s}".format(a,b,c,off,E," ".join([row[0] for row in exyzdata]) ).strip()
 
