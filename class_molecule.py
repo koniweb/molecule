@@ -157,8 +157,11 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         return returndata  
     def weight2element(self,weight):
         returndata=[]
+        weightdiff=0.01
         for ielement in self.pse():
-            if float(weight)==float(ielement[2]): returndata=ielement
+            if ( float(weight)<=float(ielement[2])+weightdiff and
+                 float(weight)>=float(ielement[2])-weightdiff ): 
+                returndata=ielement
         return returndata
 
     # return energy
