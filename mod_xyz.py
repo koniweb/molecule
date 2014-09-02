@@ -3,7 +3,7 @@
 # writexyz
 # readfxyz
 ##########################################################################
-version=3.3
+version=3.4
 versiontext='# mod_xyz.py version {:.1f}'.format(version)
 #----------------------------------------------------------------------
 # import
@@ -30,10 +30,22 @@ class molecule_rw:
             # empty data field
             if len(data)==0:
                 data=["",[""]*self.natoms()]
+            # if only name of variable added
+            elif len(data)==1:
+                data.append([""]*self.natoms())
+            # add data to data array if not already done
+            di=[0,0]
+            if   (len(data[1][0])==0 and len(data[0].split(" "))>0):      
+                di=[0,len(data[0].split(" "))]
+            elif (len(data[0].split(" "))>len(data[1][0].split(" "))):
+                di=[len(data[1][0].split(" ")),len(data[0].split(" "))]
+            # loop over data
+            for i in range(di[0],di[1]):
+                # loop over atoms get data
+                for iat in range(self.natoms()):
+                    data[1][iat]="   ".join([data[1][iat],str(getattr(self.at()[iat],data[0].split(" ")[i])())])
             # create commentline
             mol.set_comment(mol.exyz_writecomment(data))
-            # add data to data array if not already done
-            # TODO
         # print output
         print >>f, mol.natoms()
         print >>f, mol.comment()
@@ -126,7 +138,8 @@ class molecule_rw:
         return molecules
 
     def exyz_readcomment(self,comment):
-        commentsplit=comment.split(" ")
+        commentsplit=comment.strip().split(" ")
+        commentsplit.remove('')
         exyzdata=[""]
         i=0
         while i<len(commentsplit):
@@ -161,7 +174,7 @@ class molecule_rw:
                 i+=3
             # select data per atom
             else:
-                exyzdata[0]=exyzdata[0].join(str)
+                exyzdata[0]=" ".join([exyzdata[0],str])
             i+=1
         return exyzdata
 
@@ -169,7 +182,7 @@ class molecule_rw:
         # 0:   Atomtype
         # 1-3: Coordinates
         # get datafields to fill
-        Dsplit=exyzdata[0].split(" ")
+        Dsplit=exyzdata[0].strip().split(" ")
         # check if all data is there
         if len(Dsplit)==len(linesplit)-4:           
             for i in range(len(Dsplit)):
@@ -204,5 +217,5 @@ class molecule_rw:
         E=""
         if self.energy()!=0.0:E="E {:.15f}".format(self.energy())
         # return comment line
-        return "{:s} {:s} {:s} {:s} {:s} {:s}".format(a,b,c,off,E,exyzdata[0]) 
+        return "{:s} {:s} {:s} {:s} {:s} {:s}".format(a,b,c,off,E,exyzdata[0]).strip()
 
