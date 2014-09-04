@@ -33,4 +33,5 @@ To Do
 - [X] allow extended xyz input
 - [X] combine extended and normal xyz read
 - [X] combine extended and normal xyz write
-- [ ] extended xyz write also take stored data of atoms in molecule
+- [X] extended xyz write also take stored data of atoms in molecule
+- [ ] pwscf read output -- redo the write of coordinates - Final Coordinates

@@ -367,7 +367,11 @@ class molecule_rw:
                     opt="readvec"
                 elif option=="crystal" and linesplit[1]=="axes:":
                     opt="readvec0"
-
+            #
+            # if Final enthalpy/ energy keyword --> exit loop # RECHECK
+            #
+            if len(linesplit)>0 and linesplit[0]=="Final":
+                break
         # close file
         file.close()
         # return molecules

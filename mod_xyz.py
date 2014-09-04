@@ -96,7 +96,6 @@ class molecule_rw:
                 else:
                     name=linesplit[0]
                     number=self.name2element(name)[1]
-
                 # append atoms
                 mol.append_atom(
                     self.__class__.atom(
