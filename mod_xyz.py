@@ -24,7 +24,7 @@ class molecule_rw:
         else:
             f=open(filename, status)
         mol=self
-        if extended==False: data=["",[""]*self.natoms()]
+        if extended==False: data.append(["",[""]*self.natoms()])
         # EXTENDED
         else:
             # empty data field
