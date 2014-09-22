@@ -16,6 +16,8 @@ import copy
 import re
 from operator import itemgetter, attrgetter
 import mod_calc as calc # several functions
+from numpy import matrix
+from numpy import linalg
 
 ndim=calc.ndim
 pse=[
@@ -394,6 +396,38 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         self.set_vecs(off=calc.vec_vecmult(factor,self.offset()) )
         return
 
+    # wrap atoms into unitcell
+    def wrapmol(self):
+        if self.vec()==[[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]]:
+            print >> sys.stderr, "... wrapping not possible"
+            print >> sys.stderr, "... vectors have to be set"
+        else:
+            nwrap=self.wrapallatoms()
+            print >> sys.stderr, "... {:d} atoms in molecule wrapped".format(nwrap)
+        return
+
+    # calculate relative coordinates and wrap atoms
+    def wrapallatoms(self):
+        nwrap=0
+        vecM = matrix( [ [self.vec()[0][0],self.vec()[1][0],self.vec()[2][0]],
+                         [self.vec()[0][1],self.vec()[1][1],self.vec()[2][1]],
+                         [self.vec()[0][2],self.vec()[1][2],self.vec()[2][2]] ])
+        for atom in self.at():
+            tmp = matrix([ [atom.coord()[0]-self.offset()[0]],
+                           [atom.coord()[1]-self.offset()[1]],
+                           [atom.coord()[2]-self.offset()[2]] ])
+            res=linalg.solve(vecM, tmp)
+            # calculate shift to box
+            shift=[0.0,0.0,0.0]
+            for i in range(ndim):
+                if res[i]>1.0: 
+                    for idim in range(ndim): shift[idim]-=self.vec()[i][idim]
+            # reset coordinates
+            if shift!=[0.0,0.0,0.0]:
+                nwrap+=1
+                atom.set_pos(calc.vecadd(atom.coord(),shift))
+        return nwrap
+
 ######################################################################
 # ATOM CLASS
 ######################################################################
@@ -468,7 +502,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         # shift atom
         def shift(self,x,y,z):
             self.set_pos([self.coord()[0]+x,self.coord()[1]+y,self.coord()[2]+z])
-        
+
 ######################################################################
 # BOND CLASS
 ######################################################################       
@@ -476,7 +510,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         def __init__(self,atom,neighbor,per=[0,0,0]):
             # define bond start and end
             self.__atom=atom
-            self.__neighbor=neibg
+            self.__neighbor=neighbor
             # define periodicty
             self.__per=per
 
