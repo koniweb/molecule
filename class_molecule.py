@@ -379,6 +379,22 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             coo[0]=x
             coo[1]=y
             coo[2]=z
+        # rotate vectors
+        vecs=self.celldm_vec()[1]
+        vecx=[ (mat[0][0]*vecs[0][0]+mat[1][0]*vecs[0][1]+mat[2][0]*vecs[0][2]),
+               (mat[0][1]*vecs[0][0]+mat[1][1]*vecs[0][1]+mat[2][1]*vecs[0][2]),
+               (mat[0][2]*vecs[0][0]+mat[1][2]*vecs[0][1]+mat[2][2]*vecs[0][2])]
+        vecy=[ (mat[0][0]*vecs[1][0]+mat[1][0]*vecs[1][1]+mat[2][0]*vecs[1][2]),
+               (mat[0][1]*vecs[1][0]+mat[1][1]*vecs[1][1]+mat[2][1]*vecs[1][2]),
+               (mat[0][2]*vecs[1][0]+mat[1][2]*vecs[1][1]+mat[2][2]*vecs[1][2])]
+        vecz=[ (mat[0][0]*vecs[2][0]+mat[1][0]*vecs[2][1]+mat[2][0]*vecs[2][2]),
+               (mat[0][1]*vecs[2][0]+mat[1][1]*vecs[2][1]+mat[2][1]*vecs[2][2]),
+               (mat[0][2]*vecs[2][0]+mat[1][2]*vecs[2][1]+mat[2][2]*vecs[2][2])]
+        for i in range(ndim):
+            if vecx[i]<10**-10 and vecx[i]>-10**-10: vecx[i]=0.0
+            if vecy[i]<10**-10 and vecy[i]>-10**-10: vecy[i]=0.0
+            if vecz[i]<10**-10 and vecz[i]>-10**-10: vecz[i]=0.0
+        self.set_vecs(vecx,vecy,vecz)
         # move molecule back after rotation
         self.shift(px,py,pz)
 
@@ -428,6 +444,18 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
                 nwrap+=1
                 atom.set_pos(calc.vecadd(atom.coord(),shift))
         return nwrap
+    
+    # rotate vectors a->b b->c c->a
+    def rotate_vecs(self):
+        vecs=self.celldm_vec()[1]
+        self.set_vecs(vecs[1],vecs[2],vecs[0])
+        return
+
+    # exchange vectors a->b b->a
+    def exchange_vecs(self):
+        vecs=self.celldm_vec()[1]
+        self.set_vecs(vecs[1],vecs[0],vecs[2])
+        return
 
 ######################################################################
 # ATOM CLASS
