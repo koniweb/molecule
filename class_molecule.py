@@ -439,6 +439,8 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             for i in range(ndim):
                 if res[i]>1.0: 
                     for idim in range(ndim): shift[idim]-=self.vec()[i][idim]
+                elif res[i]<0.0: 
+                    for idim in range(ndim): shift[idim]+=self.vec()[i][idim]
             # reset coordinates
             if shift!=[0.0,0.0,0.0]:
                 nwrap+=1
@@ -455,6 +457,15 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
     def exchange_vecs(self):
         vecs=self.celldm_vec()[1]
         self.set_vecs(vecs[1],vecs[0],vecs[2])
+        return
+    
+    # set vectors part to all plus
+    def repositiv_vecs(self):
+        vecs=self.celldm_vec()[1]
+        for i in range(ndim):
+            for j in range(ndim):
+                if vecs[i][j]<0.0: vecs[i][j]=-vecs[i][j]
+        self.set_vecs(vecs[0],vecs[1],vecs[2])
         return
 
 ######################################################################
