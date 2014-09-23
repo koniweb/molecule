@@ -25,7 +25,7 @@ class molecule_rw:
         v=self.vec()
         o=self.offset()
         # check if vector is correct for lammps
-        if not (v[0][1]==0.0 or v[0][2]==0.0 or v[1][2]==0.0): 
+        if not (v[0][1]==0.0 and v[0][2]==0.0 and v[1][2]==0.0): 
             print >> sys.stderr, "vectors are not defined correctly for a lammps file"
             quit()
         # open file if present
