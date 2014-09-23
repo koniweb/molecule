@@ -191,7 +191,8 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             if [type[1],name] not in self.typelist():
                 self.typelist_append(type[1],name)
                 tid=self.ntypes()-1
-            else: tid=self.typelist().index([type[1],name])
+            else: 
+                tid=self.typelist().index([type[1],name])
         return tid
 
     # set typelist

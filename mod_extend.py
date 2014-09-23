@@ -88,6 +88,7 @@ class molecule_extend():
             molecule.shift(shiftv[0],shiftv[1],shiftv[2])
             # create new submolecule and copy data
             self.mol.append(self.__class__())
+            self.mol[molid].set_typelist2list(copy.deepcopy(self.typelist())) # CHECK
             self.mol[molid].set_id(molid)   # ID
             self.mol[molid].shiftvec=shiftv # shiftvec
             self.mol[molid].set_vecs(copy.deepcopy(molecule.vec()[0],),
