@@ -131,7 +131,7 @@ class molecule_rw:
 
     def exyz_readcomment(self,comment):
         commentsplit=comment.strip().split(" ")
-        commentsplit.remove('')
+        commentsplit=filter(bool, commentsplit)
         exyzdata=[]
         i=0
         while i<len(commentsplit):
