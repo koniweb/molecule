@@ -473,6 +473,29 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         self.set_vecs(vecs[0],vecs[1],vecs[2])
         return
 
+    # find bonds for atoms with length smaller than cutoff
+    def define_bonds(self,cutoff,cutmin=10**(-10),periodicity=False):
+        bndcnt=0
+        for at in self.at():
+            if periodicity:
+                perx=[-1,0,1]
+                pery=[-1,0,1]
+                perz=[-1,0,1]
+            else:
+                perx=[0]
+                pery=[0]
+                perz=[0]
+            for x in perx:
+                for y in pery:
+                    for z in perz:
+                        for neigh in self.at():             
+                            l=calc.a_dist(at, neigh, per=[x,y,z])
+                            if (l>cutmin and l<cutoff):
+                                #print at.id(),neigh.id(),x,y,z,l #infos
+                                at.add_bond(neigh,per=[x,y,z]) 
+                                bndcnt+=1
+        return bndcnt
+    
 ######################################################################
 # ATOM CLASS
 ######################################################################
@@ -491,6 +514,8 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             self.__coord=[x,y,z]
             self.__mult=[mx,my,mz]
             self.__charge=atomcharge
+            # bonds
+            self.__bonds=[]
 
         #############################################################
         # return functions
@@ -521,6 +546,12 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
 
         def charge(self):
             return self.__charge
+        
+        def bonds(self):
+            return self.__bonds
+
+        def nbonds(self):
+            return len(self.__bonds)
 
         #############################################################
         # set functions
@@ -541,6 +572,10 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         def set_charge(self,charge):
             self.__charge==charge
 
+        # set bond of atom to neighbor atom in periodicity box
+        def add_bond(self,neighbor,per=[0,0,0]):
+            self.__bonds.append(self.parentmol().bond(self,neighbor,per))
+
         #############################################################
         # modify functions
         #############################################################   
@@ -556,7 +591,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             # define bond start and end
             self.__atom=atom
             self.__neighbor=neighbor
-            # define periodicty
+            # define periodicity
             self.__per=per
 
         #############################################################
