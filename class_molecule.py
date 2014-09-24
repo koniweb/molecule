@@ -419,13 +419,28 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             print >> sys.stderr, "... wrapping not possible"
             print >> sys.stderr, "... vectors have to be set"
         else:
-            nwrap=self.wrapallatoms()
+            nwrap=self.func_on_alat(self.wrap_atom)
             print >> sys.stderr, "... {:d} atoms in molecule wrapped".format(nwrap)
         return
 
-    # calculate relative coordinates and wrap atoms
-    def wrapallatoms(self):
-        nwrap=0
+    # do wrap on coordinate of atoms
+    def wrap_atom(self,coord_alat,atom,nwrap):
+        # calculate shift to box
+        shift=[0.0,0.0,0.0]
+        for i in range(ndim):
+            if coord_alat[i]>1.0: 
+                for idim in range(ndim): shift[idim]-=self.vec()[i][idim]
+            elif coord_alat[i]<0.0: 
+                for idim in range(ndim): shift[idim]+=self.vec()[i][idim]
+        # reset coordinates
+        if shift!=[0.0,0.0,0.0]:
+            nwrap+=1
+            atom.set_pos(calc.vecadd(atom.coord(),shift))
+        return nwrap
+
+    # calculate relative coordinates and operate function on those
+    def func_on_alat(self,function):
+        counter=0
         vecM = matrix( [ [self.vec()[0][0],self.vec()[1][0],self.vec()[2][0]],
                          [self.vec()[0][1],self.vec()[1][1],self.vec()[2][1]],
                          [self.vec()[0][2],self.vec()[1][2],self.vec()[2][2]] ])
@@ -433,19 +448,9 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             tmp = matrix([ [atom.coord()[0]-self.offset()[0]],
                            [atom.coord()[1]-self.offset()[1]],
                            [atom.coord()[2]-self.offset()[2]] ])
-            res=linalg.solve(vecM, tmp)
-            # calculate shift to box
-            shift=[0.0,0.0,0.0]
-            for i in range(ndim):
-                if res[i]>1.0: 
-                    for idim in range(ndim): shift[idim]-=self.vec()[i][idim]
-                elif res[i]<0.0: 
-                    for idim in range(ndim): shift[idim]+=self.vec()[i][idim]
-            # reset coordinates
-            if shift!=[0.0,0.0,0.0]:
-                nwrap+=1
-                atom.set_pos(calc.vecadd(atom.coord(),shift))
-        return nwrap
+            coord_alat=linalg.solve(vecM, tmp)
+            counter=function(coord_alat,atom,counter)
+        return counter
     
     # rotate vectors a->b b->c c->a
     def rotate_vecs(self):
