@@ -170,6 +170,13 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
     def energy(self):
         return self.__energy
 
+    # return array bondlenghts
+    def bondlengths(self):
+        list=[]
+        for at in self.at():
+            list.append(at.bondlengths())
+        return list
+
     #############################################################
     # set functions
     #############################################################    
@@ -552,6 +559,12 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
 
         def nbonds(self):
             return len(self.__bonds)
+        
+        def bondlengths(self):
+            bondlengths=[]
+            for bond in self.bonds():
+                bondlengths.append(bond.bondlength())
+            return bondlengths
 
         #############################################################
         # set functions
@@ -597,18 +610,20 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         #############################################################
         # return functions
         #############################################################
-
         def atom(self):
             return self.__atom
 
         def neighbor(self):
             return self.__neighbor
             
+        def per(self):
+            return self.__per
+        
         def bondlength(self):
-            return calc.a_dist(self.atom(),self.neighbor(),per)
+            return calc.a_dist(self.atom(),self.neighbor(),self.per())
 
         def bondvector(self):
-            return calc.a_vec(self.atom(),self.neighbor(),per)
+            return calc.a_vec(self.atom(),self.neighbor(),self.per())
             
         #############################################################
         # set functions
