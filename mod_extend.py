@@ -121,13 +121,13 @@ class molecule_extend():
         return
 
     # multiply molecule
-    def mol_multiply(self,mx,my,mz):
+    def mol_multiply(self,mx,my,mz,offset=[0,0,0]):
         if not hasattr(self,"mol"): self.extend()
         # copy the molecules
         v=self.vec()
-        for ix in range(0,mx):
-            for iy in range(0,my):
-                for iz in range(0,mz):
+        for ix in range(offset[0],mx):
+            for iy in range(offset[1],my):
+                for iz in range(offset[2],mz):
                     x=float(ix)
                     y=float(iy)
                     z=float(iz)
