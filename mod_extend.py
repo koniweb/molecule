@@ -125,9 +125,9 @@ class molecule_extend():
         if not hasattr(self,"mol"): self.extend()
         # copy the molecules
         v=self.vec()
-        for ix in range(offset[0],mx):
-            for iy in range(offset[1],my):
-                for iz in range(offset[2],mz):
+        for ix in range(offset[0],mx+offset[0]):
+            for iy in range(offset[1],my+offset[1]):
+                for iz in range(offset[2],mz+offset[2]):
                     x=float(ix)
                     y=float(iy)
                     z=float(iz)
