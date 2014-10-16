@@ -140,6 +140,7 @@ class molecule_extend():
         self.set_vecs(calc.scal_vecmult(mx,self.celldm_vec()[1][0]),
                       calc.scal_vecmult(my,self.celldm_vec()[1][1]),
                       calc.scal_vecmult(mz,self.celldm_vec()[1][2]))
+        self.extend_set()
         return
 
     #remove submolecules
