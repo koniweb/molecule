@@ -481,26 +481,33 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         return
 
     # find bonds for atoms with length smaller than cutoff
-    def define_bonds(self,cutoff,cutmin=10**(-10),periodicity=False):
+    def define_bonds(self,cutoff,cutmin=10**(-10),atomrange=[0,-1],periodicity=False):
         bndcnt=0
+        if atomrange[1]<atomrange[0]: atomrange[1]=sys.maxint
         for at in self.at():
-            if periodicity:
-                perx=[-1,0,1]
-                pery=[-1,0,1]
-                perz=[-1,0,1]
-            else:
-                perx=[0]
-                pery=[0]
-                perz=[0]
-            for x in perx:
-                for y in pery:
-                    for z in perz:
-                        for neigh in self.at():             
-                            l=calc.a_dist(at, neigh, per=[x,y,z])
-                            if (l>cutmin and l<cutoff):
-                                #print at.id(),neigh.id(),x,y,z,l #infos
-                                at.add_bond(neigh,per=[x,y,z]) 
-                                bndcnt+=1
+            # print if 
+            if (at.id()%100)==0: 
+                print >> sys.stderr, "...bonding for atom {:d} of {:d} calculated".format(at.id(),self.natoms())
+            # only check atoms in range
+            if at.id()>=atomrange[0] and at.id()<=atomrange[1]:
+                # do bond calculation for periodic structures
+                if periodicity:
+                    perx=[-1,0,1]
+                    pery=[-1,0,1]
+                    perz=[-1,0,1]
+                else:
+                    perx=[0]
+                    pery=[0]
+                    perz=[0]
+                for x in perx:
+                    for y in pery:
+                        for z in perz:
+                            for neigh in self.at():             
+                                l=calc.a_dist(at, neigh, per=[x,y,z])
+                                if (l>cutmin and l<cutoff):
+                                    #print at.id(),neigh.id(),x,y,z,l #infos
+                                    at.add_bond(neigh,per=[x,y,z]) 
+                                    bndcnt+=1
         return bndcnt
     
 ######################################################################
