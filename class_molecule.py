@@ -205,14 +205,17 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
     # set typelist
     def set_typelist2list(self,list):
         self.__typelist=list
+        return
 
     # set atomlist
     def set_atomlist(self,list):
         self.__at=list
-
+        return
+        
     # clear atom list
     def clear_atoms(self):
         self.__at=[]
+        return
 
     # append atom
     def append_atom_coo(self,type,x,y,z,pos=-1):
@@ -353,7 +356,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         # abbreviations and angles
         cos=math.cos
         sin=math.sin
-        angle=angle*2*math.pi/360.0
+        angle=angle*2.*math.pi/360.0
         # move molecule prior to rotation
         self.shift(-px,-py,-pz)
         # normalize vector
