@@ -486,7 +486,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
     # sorting atoms via x,y,z
     def sortatoms(self,dir):
         if dir>=0 and dir<=3:
-            self.__at=sorted(self.at(), key=lambda atom:atom.coord()[dir])
+            self.set_atomlist(sorted(self.at(), key=lambda atom:atom.coord()[dir]))
         return
 
     # find bonds for atoms with length smaller than cutoff
