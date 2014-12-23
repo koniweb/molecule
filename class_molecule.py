@@ -483,6 +483,12 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         self.set_vecs(vecs[0],vecs[1],vecs[2])
         return
 
+    # sorting atoms via x,y,z
+    def sortatoms(self,dir):
+        if dir>=0 and dir<=3:
+            self.__at=sorted(self.at(), key=lambda atom:atom.coord()[dir])
+        return
+
     # find bonds for atoms with length smaller than cutoff
     def define_bonds(self,cutoff,cutmin=10**(-10),atomrange=[0,-1],periodicity=False):
         bndcnt=0
