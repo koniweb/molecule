@@ -492,13 +492,14 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
     # find bonds for atoms with length smaller than cutoff
     def define_bonds(self,cutoff,cutmin=10**(-10),atomrange=[0,-1],periodicity=False):
         bndcnt=0
-        if atomrange[1]<atomrange[0]: atomrange[1]=sys.maxint
+        arange=copy.deepcopy(atomrange)
+        if arange[1]<arange[0]: arange[1]=sys.maxint
         for at in self.at():
             # print if 
             if (at.id()%100)==0: 
                 print >> sys.stderr, "...bonding for atom {:d} of {:d} calculated".format(at.id(),self.natoms())
             # only check atoms in range
-            if at.id()>=atomrange[0] and at.id()<=atomrange[1]:
+            if at.id()>=arange[0] and at.id()<=arange[1]:
                 # do bond calculation for periodic structures
                 if periodicity:
                     perx=[-1,0,1]
