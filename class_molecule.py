@@ -5,7 +5,7 @@
 #   Atom Class
 #   Bond Class
 ##########################################################################
-version=3.3
+version=3.4
 versiontext='# class_molecule.py version {:.1f}'.format(version)
 #----------------------------------------------------------------------
 # import
@@ -574,8 +574,13 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         def bonds(self):
             return self.__bonds
 
-        def nbonds(self):
-            return len(self.__bonds)
+        def nbonds(self,cutoff=-1.0):
+            if cutoff<0.0: N=len(self.__bonds)
+            else:
+                N=0
+                for b in self.__bonds(): 
+                    if b.bondlength()<cutoff:N+=1
+            return N
         
         def bondlengths(self):
             bondlengths=[]
