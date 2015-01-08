@@ -575,10 +575,10 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             return self.__bonds
 
         def nbonds(self,cutoff=-1.0):
-            if cutoff<0.0: N=len(self.__bonds)
+            if cutoff<0.0: N=len(self.bonds())
             else:
                 N=0
-                for b in self.__bonds(): 
+                for b in self.bonds(): 
                     if b.bondlength()<cutoff:N+=1
             return N
         
