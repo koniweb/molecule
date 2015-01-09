@@ -16,8 +16,9 @@ import copy
 import re
 from operator import itemgetter, attrgetter
 import mod_calc as calc # several functions
-from numpy import matrix
-from numpy import linalg
+import numpy
+#from numpy import matrix
+#from numpy import linalg
 
 ndim=calc.ndim
 pse=[
@@ -587,6 +588,23 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             for bond in self.bonds():
                 bondlengths.append(bond.bondlength())
             return bondlengths
+
+        # return bondangles
+        def bondangles(self,cutoff=5.0):
+            bondangles=[]
+            # calculate angle with AxB=|A|x|B|*cos(theta)
+            acc=10**-6 # accuracy for angle calculation
+            for bond_i in self.bonds():
+                for bond_j in self.bonds():
+                    # if both bonds are smaller than cutoff
+                    if bond_i.bondlength()<cutoff and bond_j.bondlength()<cutoff:
+                        preangle=( calc.vecprod(bond_i.bondvector(),bond_j.bondvector())
+                                   /calc.length(bond_i.bondvector())
+                                   /calc.length(bond_j.bondvector()) )
+                        # if angle is not 360 or 0
+                        if preangle>0+acc and preangle<1-acc: 
+                            bondangles.append(numpy.arccos(preangle)*180.0/numpy.pi)
+            return bondangles
 
         #############################################################
         # set functions
