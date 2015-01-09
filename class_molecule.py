@@ -602,7 +602,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
                                    /calc.length(bond_i.bondvector())
                                    /calc.length(bond_j.bondvector()) )
                         # if angle is not 360 or 0
-                        if preangle>0+acc and preangle<1-acc: 
+                        if preangle<1-acc: 
                             bondangles.append(numpy.arccos(preangle)*180.0/numpy.pi)
             return bondangles
 
