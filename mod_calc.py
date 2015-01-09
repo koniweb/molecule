@@ -34,7 +34,7 @@ def a_dist(at1, at2, per=[0,0,0],dim=3):
 
 def a_vec(at1,at2,per=[0,0,0]):
     add=[0.0,0.0,0.0]
-    vp=at1.parentmol().vec
+    vp=at1.parentmol().vec()
     perf=[float(per[0]),float(per[1]),float(per[2])]
     add[0] = vp[0][0]*perf[0] + vp[1][0]*perf[1] + vp[2][0]*perf[2]
     add[1] = vp[0][1]*perf[0] + vp[1][1]*perf[1] + vp[2][1]*perf[2]
