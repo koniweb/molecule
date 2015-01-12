@@ -81,7 +81,7 @@ class molecule_rw:
                 )
             
         print >>f
-        f.close()
+        if filename != "": f.close()
         return
     
     # read molecules in lammps file

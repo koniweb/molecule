@@ -112,7 +112,7 @@ class molecule_rw:
             print >>f
             print >>f, "K_POINTS"
             print >>f , ('{:s}'.format(self.setup_pwscf.kpoints))
-        f.close()
+        if filename != "": f.close()
         return
     
     # read molecules in pwscf input file format
