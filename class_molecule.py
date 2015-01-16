@@ -172,10 +172,10 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         return self.__energy
 
     # return array bondlenghts
-    def bondlengths(self):
+    def bondlengths(self,types=[]):
         list=[]
         for at in self.at():
-            list.append(at.bondlengths())
+            list.append(at.bondlengths(types))
         return list
 
     #############################################################
@@ -575,18 +575,40 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         def bonds(self):
             return self.__bonds
 
-        def nbonds(self,cutoff=-1.0):
+        def nbonds(self,cutoff=-1.0,types=[]):
             if cutoff<0.0: N=len(self.bonds())
             else:
                 N=0
                 for b in self.bonds(): 
-                    if b.bondlength()<cutoff:N+=1
+                    # if types are defined
+                    if len(types)>0: 
+                        if ( (types[0]==b.atom().type()[0]    and 
+                              types[1]==b.neighbor().type()[0])  or
+                             (types[1]==b.atom().type()[0]    and 
+                              types[0]==b.neighbor().type()[0])  ):
+                            if b.bondlength()<cutoff:N+=1
+                    # for all types
+                    else:
+                        if b.bondlength()<cutoff:N+=1                    
             return N
+
+
+
+
         
-        def bondlengths(self):
+        def bondlengths(self,types=[]):
             bondlengths=[]
             for bond in self.bonds():
-                bondlengths.append(bond.bondlength())
+                # if types are defined
+                if len(types)>0: 
+                    if ( (types[0]==bond.atom().type()[0]    and 
+                          types[1]==bond.neighbor().type()[0])  or
+                         (types[1]==bond.atom().type()[0]    and 
+                          types[0]==bond.neighbor().type()[0])  ):
+                        bondlengths.append(bond.bondlength())
+                # for all types
+                else:
+                    bondlengths.append(bond.bondlength())
             return bondlengths
 
         # return bondangles
