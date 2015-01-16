@@ -591,11 +591,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
                     else:
                         if b.bondlength()<cutoff:N+=1                    
             return N
-
-
-
-
-        
+      
         def bondlengths(self,types=[]):
             bondlengths=[]
             for bond in self.bonds():
@@ -612,21 +608,36 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             return bondlengths
 
         # return bondangles
-        def bondangles(self,cutoff=5.0):
+        def bondangles(self,cutoff=5.0,types=[]):
             bondangles=[]
             # calculate angle with AxB=|A|x|B|*cos(theta)
-            acc=10**-6 # accuracy for angle calculation
             for bond_i in self.bonds():
                 for bond_j in self.bonds():
-                    # if both bonds are smaller than cutoff
-                    if bond_i.bondlength()<cutoff and bond_j.bondlength()<cutoff:
-                        preangle=( calc.vecprod(bond_i.bondvector(),bond_j.bondvector())
-                                   /calc.length(bond_i.bondvector())
-                                   /calc.length(bond_j.bondvector()) )
-                        # if angle is not 360 or 0
-                        if preangle<1-acc: 
-                            bondangles.append(numpy.arccos(preangle)*180.0/numpy.pi)
+                    # if types are defined
+                    if len(types)>0: 
+                        if ( (types[0]==bond_i.atom().type()[0]     and 
+                              types[1]==bond_i.neighbor().type()[0] and
+                              types[2]==bond_j.neighbor().type()[0] )  or
+                             (types[0]==bond_i.atom().type()[0]     and 
+                              types[1]==bond_i.neighbor().type()[0] and
+                              types[2]==bond_j.neighbor().type()[0] )  ):
+                            calc_bondangle_append(bondangles,bond_i,bond_j,cutoff)
+                    # for all types
+                    else:
+                        self.calc_bondangle_append(bondangles,bond_i,bond_j,cutoff)
             return bondangles
+        # calculation externalized
+        def calc_bondangle_append(self,bondangles,bond1,bond2,cutoff):
+            acc=10**-6 # accuracy for angle calculation
+            # if both bonds are smaller than cutoff
+            if bond1.bondlength()<cutoff and bond2.bondlength()<cutoff:
+                preangle=( calc.vecprod(bond1.bondvector(),bond2.bondvector())
+                           /calc.length(bond1.bondvector())
+                           /calc.length(bond2.bondvector()) )
+                # if angle is not 360 or 0
+                if preangle<1-acc: 
+                    bondangles.append(numpy.arccos(preangle)*180.0/numpy.pi)
+                        
 
         #############################################################
         # set functions
