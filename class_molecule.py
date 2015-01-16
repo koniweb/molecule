@@ -623,7 +623,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
                              (types[0]==bond_i.atom().type()[0]     and 
                               types[2]==bond_i.neighbor().type()[0] and
                               types[1]==bond_j.neighbor().type()[0] )  ):
-                            calc_bondangle_append(bondangles,bond_i,bond_j,cutoff)
+                            self.calc_bondangle_append(bondangles,bond_i,bond_j,cutoff)
                     # for all types
                     else:
                         self.calc_bondangle_append(bondangles,bond_i,bond_j,cutoff)
