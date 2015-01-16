@@ -357,7 +357,8 @@ class molecule_rw:
             #
             if len(linesplit)>0:
                 option=linesplit[0]
-                if   option=="atomic" and linesplit[1]=="species":
+                if  (len(linesplit)>3 and 
+                     option=="atomic" and linesplit[1]=="species" and linesplit[2]=="valence"):
                     opt="readspecies"
                 elif option=="ATOMIC_POSITIONS":
                     opt="readcoord"
