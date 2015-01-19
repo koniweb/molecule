@@ -608,10 +608,14 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             return bondlengths
 
         # return bondangles
-        def bondangles(self,cutoff=5.0,types=[]):
+        def bondangles(self,cutoff=[],types=[]):
             #types[0]   center of angle (atom)
             #types[1:2]  sides of angle (neighbor)
             bondangles=[]
+            # define cutoffs
+            if ((len(types)!=3 or len(cutoff)!=2) or len(types)!=0):
+                print >> sys.stderr, "...cutoffs not defined in bondangles function"
+                exit()
             # calculate angle with AxB=|A|x|B|*cos(theta)
             for bond_i in self.bonds():
                 for bond_j in self.bonds():
@@ -619,10 +623,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
                     if len(types)>0: 
                         if ( (types[0]==bond_i.atom().type()[0]     and 
                               types[1]==bond_i.neighbor().type()[0] and
-                              types[2]==bond_j.neighbor().type()[0] )  or
-                             (types[0]==bond_i.atom().type()[0]     and 
-                              types[2]==bond_i.neighbor().type()[0] and
-                              types[1]==bond_j.neighbor().type()[0] )  ):
+                              types[2]==bond_j.neighbor().type()[0] ) ):
                             self.calc_bondangle_append(bondangles,bond_i,bond_j,cutoff)
                     # for all types
                     else:
@@ -632,7 +633,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         def calc_bondangle_append(self,bondangles,bond1,bond2,cutoff):
             acc=10**-6 # accuracy for angle calculation
             # if both bonds are smaller than cutoff
-            if bond1.bondlength()<cutoff and bond2.bondlength()<cutoff:
+            if bond1.bondlength()<cutoff[0] and bond2.bondlength()<cutoff[1]:
                 preangle=( calc.vecprod(bond1.bondvector(),bond2.bondvector())
                            /calc.length(bond1.bondvector())
                            /calc.length(bond2.bondvector()) )
