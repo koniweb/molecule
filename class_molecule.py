@@ -613,7 +613,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             #types[1:2]  sides of angle (neighbor)
             bondangles=[]
             # define cutoffs
-            if ((len(types)!=3 or len(cutoff)!=2) or len(types)!=0):
+            if True is not ((len(types)==3 and len(cutoff)==2) or len(types)==0):
                 print >> sys.stderr, "...cutoffs not defined in bondangles function"
                 exit()
             # calculate angle with AxB=|A|x|B|*cos(theta)
