@@ -95,7 +95,7 @@ class molecule_rw:
         print >>f
         # print relative coordinates
         print >>f
-        print >>f, "ATOMIC_POSITIONS {:s}".format(self.setup_pwscf.atomic_positions_info)
+        print >>f, "ATOMIC_POSITIONS  {:s}".format(self.setup_pwscf.atomic_positions_info)
         for atom in self.at():
             print >>f ,(
                 '{:4s} {:15.10f} {:15.10f} {:15.10f}'.format(
@@ -106,7 +106,7 @@ class molecule_rw:
                     )
                 )
         print >>f
-        print >>f, "CELL_PARAMETERS {:s}".format(self.setup_pwscf.cell_parameters_info)
+        print >>f, "CELL_PARAMETERS  {:s}".format(self.setup_pwscf.cell_parameters_info)
         for cntvec in range(3):
             print >>f , (
                 '{:15.10f} {:15.10f} {:15.10f}'.format(
@@ -118,7 +118,7 @@ class molecule_rw:
         if (hasattr(self.setup_pwscf,"kpoints")):
             k=self.setup_pwscf.kpoints
             print >>f
-            print >>f, "K_POINTS {:s}".format(self.setup_pwscf.kpoints_info)
+            print >>f, "K_POINTS  {:s}".format(self.setup_pwscf.kpoints_info)
             for i in range(len(k)):
                 print >>f , ('   {:d} {:d} {:d}   {:d} {:d} {:d}'.format(k[i][0],k[i][1],k[i][2],
                                                                          k[i][3],k[i][4],k[i][5]))
@@ -499,9 +499,9 @@ class molecule_rw:
             self.kpoints=[[1, 1, 1, 0, 0, 0]]
             self.kpoints_info="automatic"
             # cell parameters
-            self.cell_parameters_info=" "
+            self.cell_parameters_info=""
             # atomic positions
-            self.atomic_positions_info=" crystal"
+            self.atomic_positions_info="crystal"
             
 
         #############################################################
