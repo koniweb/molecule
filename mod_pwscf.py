@@ -94,7 +94,6 @@ class molecule_rw:
                  self.pse()[type[0]][3])
         print >>f
         # print relative coordinates
-        print >>f
         print >>f, "ATOMIC_POSITIONS  {:s}".format(self.setup_pwscf.atomic_positions_info)
         for atom in self.at():
             # define fixes for atoms
@@ -111,14 +110,14 @@ class molecule_rw:
                     )
                 )
         print >>f
+        # print cell parameters
         print >>f, "CELL_PARAMETERS  {:s}".format(self.setup_pwscf.cell_parameters_info)
         for cntvec in range(3):
             print >>f , (
                 '{:15.10f} {:15.10f} {:15.10f}'.format(
                     self.celldm_vec()[1][cntvec][0], 
                     self.celldm_vec()[1][cntvec][1], 
-                    self.celldm_vec()[1][cntvec][2],
-                    
+                    self.celldm_vec()[1][cntvec][2]                    
                     )
                 )
         if (hasattr(self.setup_pwscf,"kpoints")):
@@ -128,7 +127,6 @@ class molecule_rw:
             for i in range(len(k)):
                 print >>f , ('   {:d} {:d} {:d}   {:d} {:d} {:d}'.format(k[i][0],k[i][1],k[i][2],
                                                                          k[i][3],k[i][4],k[i][5]))
-                
         if filename != "": f.close()
         return
     
