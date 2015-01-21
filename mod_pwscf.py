@@ -74,6 +74,13 @@ class molecule_rw:
                     self.setup_pwscf.ions[i][0],
                     self.setup_pwscf.ions[i][1])
             print >>f, "/"
+        if hasattr(self.setup_pwscf, 'cell'):
+            print >>f, "&CELL"
+            for i in range(len(self.setup_pwscf.cell)):
+                print >>f, ('{:s}={:s}').format(
+                    self.setup_pwscf.cell[i][0],
+                    self.setup_pwscf.cell[i][1])
+            print >>f, "/"
         # print atomtypes
         print >>f
         print >>f, "ATOMIC_SPECIES"
@@ -88,7 +95,7 @@ class molecule_rw:
         print >>f
         # print relative coordinates
         print >>f
-        print >>f, "ATOMIC_POSITIONS crystal"
+        print >>f, "ATOMIC_POSITIONS {:s}".format(self.setup_pwscf.atomic_positions_info)
         for atom in self.at():
             print >>f ,(
                 '{:4s} {:15.10f} {:15.10f} {:15.10f}'.format(
@@ -99,7 +106,7 @@ class molecule_rw:
                     )
                 )
         print >>f
-        print >>f, "CELL_PARAMETERS"
+        print >>f, "CELL_PARAMETERS {:s}".format(self.setup_pwscf.cell_parameters_info)
         for cntvec in range(3):
             print >>f , (
                 '{:15.10f} {:15.10f} {:15.10f}'.format(
@@ -109,9 +116,13 @@ class molecule_rw:
                     )
                 )
         if (hasattr(self.setup_pwscf,"kpoints")):
+            k=self.setup_pwscf.kpoints
             print >>f
-            print >>f, "K_POINTS"
-            print >>f , ('{:s}'.format(self.setup_pwscf.kpoints))
+            print >>f, "K_POINTS {:s}".format(self.setup_pwscf.kpoints_info)
+            for i in range(len(k)):
+                print >>f , ('   {:d} {:d} {:d}   {:d} {:d} {:d}'.format(k[i][0],k[i][1],k[i][2],
+                                                                         k[i][3],k[i][4],k[i][5]))
+                
         if filename != "": f.close()
         return
     
@@ -405,8 +416,8 @@ class molecule_rw:
                     linesplit[i]=linesplit[i].replace(",","")
                     self.setup_pwscf.ions.append(linesplit[i].split("="))
         elif opt=="readkpoints":
-            line=" ".join(linesplit)
-            self.setup_pwscf.kpoints=line
+            for i in range(len(linesplit)): linesplit[i]=int(linesplit[i])
+            self.setup_pwscf.kpoints.append(linesplit)
             opt=""
         return opt
 
@@ -428,10 +439,17 @@ class molecule_rw:
                 opt="readspecies"
             elif option=="ATOMIC_POSITIONS":
                 opt="readcoord"
+                if len(linesplit)==2 : self.setup_pwscf.atomic_positions_info=linesplit[1]
+                else:                  self.setup_pwscf.atomic_positions_info=""
             elif option=="CELL_PARAMETERS":
                 opt="readvec"
+                if len(linesplit)==2 : self.setup_pwscf.cell_parameters_info=linesplit[1]
+                else:                  self.setup_pwscf.cell_parameters_info=""
             elif option=="K_POINTS":
-                opt="readkpoints"                    
+                opt="readkpoints"
+                self.setup_pwscf.kpoints=[]
+                if len(linesplit)==2 : self.setup_pwscf.kpoints_info=linesplit[1]
+                else:                  self.setup_pwscf.kpoints_info=""
         # return internal keywords
         return opt
         
@@ -478,8 +496,14 @@ class molecule_rw:
             self.electrons=[]
             self.ions=[]
             # kpoints Na Nb Nc Sa Sb Sc
-            self.kpoints="1 1 1 0 0 0"
+            self.kpoints=[[1, 1, 1, 0, 0, 0]]
+            self.kpoints_info="automatic"
+            # cell parameters
+            self.cell_parameters_info=" "
+            # atomic positions
+            self.atomic_positions_info=" crystal"
             
+
         #############################################################
         # return functions
         #############################################################                      

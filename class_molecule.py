@@ -612,7 +612,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             #types[0]   center of angle (atom)
             #types[1:2]  sides of angle (neighbor)
             bondangles=[]
-            # define cutoffs
+            # check cutoffs -> too expensive??
             if True is not ((len(types)==3 and len(cutoff)==2) or len(types)==0):
                 print >> sys.stderr, "...cutoffs not defined in bondangles function"
                 exit()
