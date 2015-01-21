@@ -486,7 +486,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
 
     # sorting atoms via x,y,z
     def sortatoms(self,dir,factor=1):
-        if dir>=0 and dir<=3:
+        if dir>=0 and dir<=2:
             self.set_atomlist(sorted(self.at(), key=lambda atom:factor*atom.coord()[dir]))
         return
 
