@@ -97,12 +97,17 @@ class molecule_rw:
         print >>f
         print >>f, "ATOMIC_POSITIONS  {:s}".format(self.setup_pwscf.atomic_positions_info)
         for atom in self.at():
+            # define fixes for atoms
+            fixes="  "
+            for i in range(len(atom.fixes())):fixes="{:s} {:s}".format(fixes,str(atom.fixes()[i]))
+            # print atoms
             print >>f ,(
-                '{:4s} {:15.10f} {:15.10f} {:15.10f}'.format(
+                '{:4s} {:15.10f} {:15.10f} {:15.10f}{:s}'.format(
                     atom.type()[0],
                     atom.coord_crystal[0], 
                     atom.coord_crystal[1], 
-                    atom.coord_crystal[2]
+                    atom.coord_crystal[2],
+                    fixes
                     )
                 )
         print >>f
@@ -112,7 +117,8 @@ class molecule_rw:
                 '{:15.10f} {:15.10f} {:15.10f}'.format(
                     self.celldm_vec()[1][cntvec][0], 
                     self.celldm_vec()[1][cntvec][1], 
-                    self.celldm_vec()[1][cntvec][2]
+                    self.celldm_vec()[1][cntvec][2],
+                    
                     )
                 )
         if (hasattr(self.setup_pwscf,"kpoints")):
@@ -190,6 +196,8 @@ class molecule_rw:
                     # cntat
                     cntat+=1
                     natoms=cntat
+                    for i in range(4,len(linesplit)): linesplit[i]=int(linesplit[i])
+                    mol.at()[-1].set_fixes(linesplit[4:])
                 else: opt=""
             # read input options
             opt=mol.readpwscfin_opt(linesplit,opt)
@@ -439,8 +447,9 @@ class molecule_rw:
                 opt="readspecies"
             elif option=="ATOMIC_POSITIONS":
                 opt="readcoord"
+                # additional argument for atomic positions
                 if len(linesplit)==2 : self.setup_pwscf.atomic_positions_info=linesplit[1]
-                else:                  self.setup_pwscf.atomic_positions_info=""
+                else:                  self.setup_pwscf.atomic_positions_info=""                
             elif option=="CELL_PARAMETERS":
                 opt="readvec"
                 if len(linesplit)==2 : self.setup_pwscf.cell_parameters_info=linesplit[1]
@@ -502,7 +511,7 @@ class molecule_rw:
             self.cell_parameters_info=""
             # atomic positions
             self.atomic_positions_info="crystal"
-            
+            self.atomic_position_fixes=[]
 
         #############################################################
         # return functions

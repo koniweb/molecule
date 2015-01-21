@@ -109,6 +109,7 @@ class molecule_extend():
                                         at.mult()[2],
                                         at.charge())
                     )
+                self.mol[molid].at()[-1].set_fixes(at.fixes())
             ## set new submolecule
             #self.mol[molid].set_typelist()
             # shift and rotate back     

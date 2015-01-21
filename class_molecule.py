@@ -541,6 +541,8 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             self.__charge=atomcharge
             # bonds
             self.__bonds=[]
+            # fixes
+            self.__fixes=[] # fixed in x y or z direction: 1 for moveable 0 for fixed
 
         #############################################################
         # return functions
@@ -640,7 +642,9 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
                 # if angle is not 360 or 0
                 if preangle<1-acc: 
                     bondangles.append(numpy.arccos(preangle)*180.0/numpy.pi)
-                        
+
+        def fixes(self):
+            return self.__fixes
 
         #############################################################
         # set functions
@@ -664,6 +668,10 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         # set bond of atom to neighbor atom in periodicity box
         def add_bond(self,neighbor,per=[0,0,0]):
             self.__bonds.append(self.parentmol().bond(self,neighbor,per))
+
+        # set fixes for atoms
+        def set_fixes(self,fixes):
+            if len(fixes)<=3: self.__fixes=fixes           
 
         #############################################################
         # modify functions
