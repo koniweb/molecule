@@ -5,7 +5,7 @@
 #   Atom Class
 #   Bond Class
 ##########################################################################
-version=3.4
+version=3.5
 versiontext='# class_molecule.py version {:.1f}'.format(version)
 #----------------------------------------------------------------------
 # import

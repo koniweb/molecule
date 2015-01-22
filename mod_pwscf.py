@@ -4,7 +4,7 @@
 # readfpwscfin
 # readfpwscfout
 ##########################################################################
-version=1.1
+version=1.2
 versiontext='# mod_pwscf.py version {:.1f}'.format(version)
 #----------------------------------------------------------------------
 # import
@@ -47,69 +47,69 @@ class molecule_rw:
             f=open(filename, status)
         # print options if present
         ## CONTROL
-        str="    "
+        pstr="    "
         if hasattr(self.setup_pwscf, 'control'):
             if len(self.setup_pwscf.control)>0:
                 print >>f, " {:s}".format("&control")
                 for i in range(len(self.setup_pwscf.control)):
                     if self.setup_pwscf.control[i]=="LB":
-                        print >>f , str[0:-2]
-                        str="    "
+                        print >>f , pstr[0:-2]
+                        pstr="    "
                     else: 
-                        str=('{:s}{:s}={:s}, ').format(
-                            str,
+                        pstr=('{:s}{:s}={:s}, ').format(
+                            pstr,
                             self.setup_pwscf.control[i][0],
                             self.setup_pwscf.control[i][1])
-                if self.setup_pwscf.control[-1]!="LB": print >>f , str[0:-2]
+                if self.setup_pwscf.control[-1]!="LB": print >>f , pstr[0:-2]
                 print >>f, "/"
         ## SYSTEM
-        str="    "
+        pstr="    "
         if hasattr(self.setup_pwscf, 'system'):
             if len(self.setup_pwscf.system)>0:
                 print >>f, " {:s}".format("&system")
                 for i in range(len(self.setup_pwscf.system)):
                     if self.setup_pwscf.system[i]=="LB":
-                        print >>f , str[0:-2]
-                        str="    "
+                        print >>f , pstr[0:-2]
+                        pstr="    "
                     else: 
-                        str=('{:s}{:s}={:s}, ').format(
-                            str,
+                        pstr=('{:s}{:s}={:s}, ').format(
+                            pstr,
                             self.setup_pwscf.system[i][0],
                             self.setup_pwscf.system[i][1])
                 print >>f, "/"
-                if self.setup_pwscf.system[-1]!="LB": print >>f , str[0:-2]
+                if self.setup_pwscf.system[-1]!="LB": print >>f , pstr[0:-2]
         ## ELECTRONS
-        str="    "
+        pstr="    "
         if hasattr(self.setup_pwscf, 'electrons'):
             if len(self.setup_pwscf.electrons)>0:
                 print >>f, " {:s}".format("&electrons")
                 for i in range(len(self.setup_pwscf.electrons)):
                     if self.setup_pwscf.electrons[i]=="LB":
-                        print >>f , str[0:-2]
-                        str="    "
+                        print >>f , pstr[0:-2]
+                        pstr="    "
                     else: 
-                        str=('{:s}{:s}={:s}, ').format(
-                            str,
+                        pstr=('{:s}{:s}={:s}, ').format(
+                            pstr,
                             self.setup_pwscf.electrons[i][0],
                             self.setup_pwscf.electrons[i][1])
                 print >>f, "/"
-                if self.setup_pwscf.electrons[-1]!="LB": print >>f , str[0:-2]
+                if self.setup_pwscf.electrons[-1]!="LB": print >>f , pstr[0:-2]
         ## IONS
-        str="    "
+        pstr="    "
         if hasattr(self.setup_pwscf, 'ions'):
             if len(self.setup_pwscf.ions)>0:
                 print >>f, " {:s}".format("&ions")
                 for i in range(len(self.setup_pwscf.ions)):
                     if self.setup_pwscf.ions[i]=="LB":
-                        print >>f , str[0:-2]
-                        str="    "
+                        print >>f , pstr[0:-2]
+                        pstr="    "
                     else: 
-                        str=('{:s}{:s}={:s}, ').format(
-                            str,
+                        pstr=('{:s}{:s}={:s}, ').format(
+                            pstr,
                             self.setup_pwscf.ions[i][0],
                             self.setup_pwscf.ions[i][1])
                 print >>f, "/"
-                if self.setup_pwscf.ions[-1]!="LB": print >>f , str[0:-2]
+                if self.setup_pwscf.ions[-1]!="LB": print >>f , pstr[0:-2]
         ## CELL
         if hasattr(self.setup_pwscf, 'cell'):
             print >>f, "&CELL"
@@ -134,8 +134,8 @@ class molecule_rw:
         print >>f, "ATOMIC_POSITIONS  {:s}".format(self.setup_pwscf.atomic_positions_info)
         for atom in self.at():
             # define fixes for atoms
-            fixes="  "
-            for i in range(len(atom.fixes())):fixes="{:s} {:s}".format(fixes,str(atom.fixes()[i]))
+            fixatom="  "
+            for i in range(len(atom.fixes())): fixatom+=" {:s}".format(str(atom.fixes()[i]))
             # print atoms
             print >>f ,(
                 '{:4s} {:15.10f} {:15.10f} {:15.10f}{:s}'.format(
@@ -143,7 +143,7 @@ class molecule_rw:
                     atom.coord_crystal[0], 
                     atom.coord_crystal[1], 
                     atom.coord_crystal[2],
-                    fixes
+                    fixatom
                     )
                 )
         print >>f
