@@ -46,34 +46,67 @@ class molecule_rw:
         else:
             f=open(filename, status)
         # print options if present
+        ## CONTROL
+        str="    "
         if hasattr(self.setup_pwscf, 'control'):
-            print >>f, "&control"
+            print >>f, " {:s}".format("&control")
             for i in range(len(self.setup_pwscf.control)):
-                print >>f, ('{:s}={:s}').format(
-                    self.setup_pwscf.control[i][0],
-                    self.setup_pwscf.control[i][1])
+                if self.setup_pwscf.control[i]=="LB":
+                    print >>f , str[0:-2]
+                    str="    "
+                else: 
+                    str=('{:s}{:s}={:s}, ').format(
+                        str,
+                        self.setup_pwscf.control[i][0],
+                        self.setup_pwscf.control[i][1])
+            if self.setup_pwscf.control[-1]!="LB": print >>f , str[0:-2]
             print >>f, "/"
+        ## SYSTEM
+        str="    "
         if hasattr(self.setup_pwscf, 'system'):
-            print >>f, "&system"
+            print >>f, " {:s}".format("&system")
             for i in range(len(self.setup_pwscf.system)):
-                print >>f, ('{:s}={:s}').format(
-                    self.setup_pwscf.system[i][0],
-                    self.setup_pwscf.system[i][1])
+                if self.setup_pwscf.system[i]=="LB":
+                    print >>f , str[0:-2]
+                    str="    "
+                else: 
+                    str=('{:s}{:s}={:s}, ').format(
+                        str,
+                        self.setup_pwscf.system[i][0],
+                        self.setup_pwscf.system[i][1])
             print >>f, "/"
+            if self.setup_pwscf.system[-1]!="LB": print >>f , str[0:-2]
+        ## ELECTRONS
+        str="    "
         if hasattr(self.setup_pwscf, 'electrons'):
-            print >>f, "&electrons"
+            print >>f, " {:s}".format("&electrons")
             for i in range(len(self.setup_pwscf.electrons)):
-                print >>f, ('{:s}={:s}').format(
-                    self.setup_pwscf.electrons[i][0],
-                    self.setup_pwscf.electrons[i][1])
+                if self.setup_pwscf.electrons[i]=="LB":
+                    print >>f , str[0:-2]
+                    str="    "
+                else: 
+                    str=('{:s}{:s}={:s}, ').format(
+                        str,
+                        self.setup_pwscf.electrons[i][0],
+                        self.setup_pwscf.electrons[i][1])
             print >>f, "/"
+            if self.setup_pwscf.electrons[-1]!="LB": print >>f , str[0:-2]
+        ## IONS
+        str="    "
         if hasattr(self.setup_pwscf, 'ions'):
-            print >>f, "&ions"
+            print >>f, " {:s}".format("&ions")
             for i in range(len(self.setup_pwscf.ions)):
-                print >>f, ('{:s}={:s}').format(
-                    self.setup_pwscf.ions[i][0],
-                    self.setup_pwscf.ions[i][1])
+                if self.setup_pwscf.ions[i]=="LB":
+                    print >>f , str[0:-2]
+                    str="    "
+                else: 
+                    str=('{:s}{:s}={:s}, ').format(
+                        str,
+                        self.setup_pwscf.ions[i][0],
+                        self.setup_pwscf.ions[i][1])
             print >>f, "/"
+            if self.setup_pwscf.ions[-1]!="LB": print >>f , str[0:-2]
+        ## CELL
         if hasattr(self.setup_pwscf, 'cell'):
             print >>f, "&CELL"
             for i in range(len(self.setup_pwscf.cell)):
@@ -81,7 +114,7 @@ class molecule_rw:
                     self.setup_pwscf.cell[i][0],
                     self.setup_pwscf.cell[i][1])
             print >>f, "/"
-        # print atomtypes
+        ## ATOMIC SPECIES
         print >>f
         print >>f, "ATOMIC_SPECIES"
         for type in self.typelist():
@@ -93,7 +126,7 @@ class molecule_rw:
                  self.pse()[type[0]][2],
                  self.pse()[type[0]][3])
         print >>f
-        # print relative coordinates
+        ## ATOMIC POSITIONS in crystal
         print >>f, "ATOMIC_POSITIONS  {:s}".format(self.setup_pwscf.atomic_positions_info)
         for atom in self.at():
             # define fixes for atoms
@@ -110,7 +143,7 @@ class molecule_rw:
                     )
                 )
         print >>f
-        # print cell parameters
+        ## CELL PARAMETERS
         print >>f, "CELL_PARAMETERS  {:s}".format(self.setup_pwscf.cell_parameters_info)
         for cntvec in range(3):
             print >>f , (
@@ -120,13 +153,22 @@ class molecule_rw:
                     self.celldm_vec()[1][cntvec][2]                    
                     )
                 )
+        ## KPOINTS
         if (hasattr(self.setup_pwscf,"kpoints")):
             k=self.setup_pwscf.kpoints
             print >>f
             print >>f, "K_POINTS  {:s}".format(self.setup_pwscf.kpoints_info)
-            for i in range(len(k)):
-                print >>f , ('   {:d} {:d} {:d}   {:d} {:d} {:d}'.format(k[i][0],k[i][1],k[i][2],
-                                                                         k[i][3],k[i][4],k[i][5]))
+            # automatic
+            if self.setup_pwscf.kpoints_info=="automatic":
+                print >>f , ('   {:d} {:d} {:d}   {:d} {:d} {:d}'.format(k[0][0],k[0][1],k[0][2],
+                                                                         k[0][3],k[0][4],k[0][5]))
+            # rest without gamma
+            elif self.setup_pwscf.kpoints_info!="gamma":
+                print >> f, ("{:d}").format(k[0][0])
+                for i in range(1,len(k)):
+                    print >>f , ('{:f} {:f} {:f}   {:f}'.format(k[i][0],k[i][1],k[i][2],
+                                                                   k[i][3]))
+        # close filename
         if filename != "": f.close()
         return
     
@@ -403,28 +445,48 @@ class molecule_rw:
                 for i in range(len(linesplit)):
                     linesplit[i]=linesplit[i].replace(",","")
                     self.setup_pwscf.system.append(linesplit[i].split("="))
+                self.setup_pwscf.system.append("LB") #TEST
         elif opt=="control":
             if linesplit[0]=="/": opt=""
             else:
                 for i in range(len(linesplit)):
                     linesplit[i]=linesplit[i].replace(",","")
                     self.setup_pwscf.control.append(linesplit[i].split("="))
+                self.setup_pwscf.control.append("LB") #TEST
         elif opt=="electrons":
             if linesplit[0]=="/": opt=""
             else:
                 for i in range(len(linesplit)):
                     linesplit[i]=linesplit[i].replace(",","")
                     self.setup_pwscf.electrons.append(linesplit[i].split("="))
+                self.setup_pwscf.electrons.append("LB") #TEST
         elif opt=="ions":
             if linesplit[0]=="/": opt=""
             else:
                 for i in range(len(linesplit)):
                     linesplit[i]=linesplit[i].replace(",","")
                     self.setup_pwscf.ions.append(linesplit[i].split("="))
+                self.setup_pwscf.ions.append("LB") #TEST
         elif opt=="readkpoints":
-            for i in range(len(linesplit)): linesplit[i]=int(linesplit[i])
-            self.setup_pwscf.kpoints.append(linesplit)
-            opt=""
+            # read info for automatic -- only one line
+            if self.setup_pwscf.kpoints_info=="automatic":
+                for i in range(len(linesplit)): linesplit[i]=int(linesplit[i])
+                self.setup_pwscf.kpoints.append(linesplit)
+                opt=""
+            # read info for automatic -- no line
+            elif self.setup_pwscf.kpoints_info=="gamma":
+                opt=""
+            # read info for multiple kpoint lines with positions
+            else:
+                print "yeah"
+                if len(linesplit)==1: 
+                    self.setup_pwscf.kpoints.append([int(linesplit[0]),0])
+                else:
+                    self.setup_pwscf.kpoints[0][1]+=1
+                    if self.setup_pwscf.kpoints[0][1]<=self.setup_pwscf.kpoints[0][0]:
+                        for i in range(len(linesplit)): linesplit[i]=float(linesplit[i])
+                        self.setup_pwscf.kpoints.append(linesplit)
+                    else: opt=""
         return opt
 
     # find option blocks in pwscf
