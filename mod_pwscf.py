@@ -589,8 +589,6 @@ class molecule_rw:
         # set vector
         if len(vec)==3:
             self.set_vecs(vec[0],vec[1],vec[2])
-        # DEBUG
-        print self.celldm_vec()
         file.close()
     #
     # PWSCF input file option class
