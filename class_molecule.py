@@ -75,7 +75,6 @@ import mod_extend as mext  # molecule subclass
 ######################################################################
 class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
                mext.molecule_extend):
-
     # initialize
     def __init__(self):           
         # pse

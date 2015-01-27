@@ -482,7 +482,6 @@ class molecule_rw:
                 opt=""
             # read info for multiple kpoint lines with positions
             else:
-                print "yeah"
                 if len(linesplit)==1: 
                     self.setup_pwscf.kpoints.append([int(linesplit[0]),0])
                 else:
@@ -550,14 +549,48 @@ class molecule_rw:
     def read_setup_pwscf(self,filename):
         file=open(filename,"r")
         opt=""
+        ntypes=0
         cntline=0
+        vec=[]
+        cntvec=0
         for line in file:
             cntline+=1
             linesplit=line.split()
+            # read vectors
+            if  opt=="readvec":
+                vec.append([float(linesplit[0]),
+                            float(linesplit[1]),
+                            float(linesplit[2])])
+                cntvec+=1
+                if cntvec==3: opt=""
+            # read species
+            if  opt=="readspecies":
+                if not len(linesplit)==0:
+                    name=linesplit[0]
+                    mass=float(linesplit[1])
+                    pot=linesplit[2]
+                    self.set_element(name,mass,pot)
+                    ntypes+=1
+                else: opt=""
             # read input options
             opt=self.readpwscfin_opt(linesplit,opt)
             # read main options
             opt=self.readpwscfin_blocks(linesplit,opt)
+        # set celldm
+        set=False
+        for i in range(len(self.setup_pwscf.system)):
+            if self.setup_pwscf.system[i][0]=="celldm(1)": 
+                celldm=float(self.setup_pwscf.system[i][1])
+                set=True
+        if set==False:
+            celldm=float(1.0)
+        self.set_celldm(celldm*calc.b2A)    # in A
+        self.setup_pwscf.set_celldm(celldm) # in bohr
+        # set vector
+        if len(vec)==3:
+            self.set_vecs(vec[0],vec[1],vec[2])
+        # DEBUG
+        print self.celldm_vec()
         file.close()
     #
     # PWSCF input file option class
