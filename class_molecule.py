@@ -89,6 +89,8 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         self.__at=[]
         self.__celldm=1.0
         self.__vec=[[0.0 for x in xrange(0,ndim)]for x in xrange(0,ndim)] 
+        # additional data
+        self.__data=[] # [[ info, [data atom0,data atom1,...]],...]
         # vec[0]: a
         # vec[1]: b
         # vec[2]: c
@@ -180,6 +182,10 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         for at in self.at():
             list.append(at.bondlengths(types))
         return list
+    
+    # def return additional data
+    def data(self):
+        return self.__data
 
     #############################################################
     # set functions
@@ -309,6 +315,11 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
     def set_energy(self,energy):
         self.__energy=float(energy)
         return
+
+    # def set additional data
+    def set_data(self,data):
+        self.__data=data
+        return 
 
     #############################################################
     # modify functions

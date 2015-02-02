@@ -281,10 +281,9 @@ class molecule_rw:
                             )
                         )
                     # additional data
-                    d=[]
                     for i in range(4,len(data)):
-                        d.append(linesplit[data[i]])
-                    adddata.append(d)
+                        adddata[i-4][1].append(linesplit[data[i]])
+                    # finish atom read in
                     cntat+=1
                     if len(mol.at())==natoms:
                         block=[]
@@ -307,19 +306,18 @@ class molecule_rw:
                     if cntmol==0:
                         mol=self.__class__()
                         mol.clear_atoms()
-                        cntmol+=1
                     else:
                         mol.set(filename,cntmol)
                         molecules.append(copy.copy(mol))
+                        mol.set_data(adddata)
+                        adddata=[]
+                    cntmol+=1
                     # additional data
-                    adddata_info=[]
-                    adddata=[]
                     for i in range(4,len(data)):
-                        adddata_info.append(customdata[data[i]])
-        # if start==-1 add last frame only                                                                          
-        if start==-1:
-            mol.set(filename,cntmol,comment)
-            molecules.append(copy.copy(mol))
+                        adddata.append([customdata[data[i]],[]])
+        # append last frame
+        mol.set(filename,cntmol)
+        molecules.append(copy.copy(mol))
         # close file                                                                                                
         file.close()
         # return molecules                                                                                          
