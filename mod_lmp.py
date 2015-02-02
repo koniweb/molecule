@@ -308,8 +308,8 @@ class molecule_rw:
                         mol.clear_atoms()
                     else:
                         mol.set(filename,cntmol)
-                        molecules.append(copy.copy(mol))
                         mol.set_data(adddata)
+                        molecules.append(copy.copy(mol))
                         adddata=[]
                     cntmol+=1
                     # additional data
@@ -317,7 +317,9 @@ class molecule_rw:
                         adddata.append([customdata[data[i]],[]])
         # append last frame
         mol.set(filename,cntmol)
+        mol.set_data(adddata)
         molecules.append(copy.copy(mol))
+        # todo
         # close file                                                                                                
         file.close()
         # return molecules                                                                                          
