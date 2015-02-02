@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 ##########################################################################
-# writexyz
-# readfxyz
+# writelmp
+# readlmp
+# readlmpcustomout
 ##########################################################################
-version=1.0
+version=1.1
 versiontext='# mod_lmp.py version {:.1f}'.format(version)
 #----------------------------------------------------------------------
 # import
@@ -234,5 +235,93 @@ class molecule_rw:
         # close file
         file.close()
         # return molecules
+        return molecules
+
+    # read lmp custom
+    def readlmpcustomout(self,filename,start=1,end=-1):
+        # only last molecule via start=-1 and end=-1                                                                
+        # set molecule                                                                                              
+        molecules=[]
+        # check read file                                                                                           
+        try:
+            file=open(filename, 'r')
+        except IOError:
+            print >> sys.stderr, "... input file not found"
+            exit()
+        # read file                                                                                                 
+        cntat=0
+        natoms=0
+        cntmol=0
+        #block
+        block=[]
+        box=[]
+        customdata=[]
+        adddata=[]
+        adddata_info=[]
+        for line in file:
+            linesplit=line.split()
+            # go through blocks
+            if linesplit[0]!="ITEM:":
+                if   len(block)==3 and block[0:3]==["NUMBER","OF","ATOMS"]:
+                    natoms=int(linesplit[0])
+                elif len(block)>=2 and block[0:3]==["BOX","BOUNDS"]:
+                    for i in len(linesplit):linesplit[i]=float(linesplit[i])
+                    box.append(linesplit)
+                elif len(block)>=1 and block[0]=="ATOMS":
+                    number=self.name2element(linesplit[data[0]])[0]
+                    mol.append_atom(
+                        self.__class__.atom(
+                            mol,
+                            cntat,
+                            linesplit[data[0]],
+                            number,
+                            float(linesplit[data[1]]),
+                            float(linesplit[data[2]]),
+                            float(linesplit[data[3]])
+                            )
+                        )
+                    # additional data
+                    d=[]
+                    for i in range(4,len(data)):
+                        d.append(linesplit[data[i]])
+                    adddata.append(d)
+                    cntat+=1
+                    if len(mol.at())==natoms:
+                        block=[]
+            # get block information
+            else:
+                block=linesplit[1:]
+                # get custom data information
+                if linesplit[1]=="ATOMS":
+                    data=[-1,-1,-1,-1] # name,x,y,z
+                    customdata=linesplit[2:]
+                    for i in range(len(customdata)):
+                        if   customdata[i]=="element":  data[0]=i
+                        elif customdata[i]=="x":        data[1]=i
+                        elif customdata[i]=="y":        data[2]=i
+                        elif customdata[i]=="z":        data[3]=i
+                        elif customdata[i]=="id":       nid=i
+                        else: data.append(i)
+                    # create molecules
+                    cntat=0
+                    if cntmol==0:
+                        mol=self.__class__()
+                        mol.clear_atoms()
+                        cntmol+=1
+                    else:
+                        mol.set(filename,cntmol)
+                        molecules.append(copy.copy(mol))
+                    # additional data
+                    adddata_info=[]
+                    adddata=[]
+                    for i in range(4,len(data)):
+                        adddata_info.append(customdata[data[i]])
+        # if start==-1 add last frame only                                                                          
+        if start==-1:
+            mol.set(filename,cntmol,comment)
+            molecules.append(copy.copy(mol))
+        # close file                                                                                                
+        file.close()
+        # return molecules                                                                                          
         return molecules
 

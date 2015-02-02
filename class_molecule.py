@@ -151,6 +151,10 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         returndata=[]
         for ielement in self.pse():
             if  localname==ielement[0]: returndata=ielement
+        # if not found remove last character
+        if len(returndata)==0:
+            for ielement in self.pse():
+                if  localname[0:-1]==ielement[0]: returndata=ielement
         return returndata
     def number2element(self,number):
         returndata=[]
