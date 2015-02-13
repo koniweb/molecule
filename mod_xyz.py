@@ -30,7 +30,7 @@ class molecule_rw:
             # empty data field
             if len(data)==0:
                 # if additional data present
-                if len(mol.data())!=0:
+                if len(mol.data())!=0 or len(mol.data())!=self.natoms():
                     data=mol.data()
                 else:
                     data.append(["",[""]*self.natoms()])
