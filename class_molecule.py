@@ -227,6 +227,15 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         self.__at=[]
         return
 
+    # delete atoms
+    def delete_atoms(self,idlist=[]):
+        # sort in reverse order
+        idlist.sort(reverse=True)
+        # delete from last to first
+        for item in idlist:
+            del self.__at[item]
+        return
+
     # append atom
     def append_atom_coo(self,type,x,y,z,pos=-1):
         # if position is -1 append atom at the end
