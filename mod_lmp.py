@@ -222,11 +222,7 @@ class molecule_rw:
                 if linesplit[3:6]==["xy","xz","yz"]:
                     tilt=[float(linesplit[0]),float(linesplit[1]),float(linesplit[2])]
         # calculate vectors a,b,c out of the box and tilt
-        vec=[]
-        vec.append([ x[1]-x[0], 0.0,       0.0])
-        vec.append([ tilt[0],   y[1]-y[0], 0.0])
-        vec.append([ tilt[1],   tilt[2],   z[1]-z[0] ])
-        # finish file and append it
+        vec=self.calc_vec(x,y,z,tilt)
         # set periodicity
         mol.set_vecs(vec[0],vec[1],vec[2],[x[0],y[0],z[0]])
         # set molecule and append
@@ -239,16 +235,16 @@ class molecule_rw:
 
     # read lmp custom
     def readlmpcustomout(self,filename,start=1,end=-1):
-        # only last molecule via start=-1 and end=-1                                                                
-        # set molecule                                                                                              
+        # only last molecule via start=-1 and end=-1
+        # set molecule                                                                                             
         molecules=[]
-        # check read file                                                                                           
+        # check read file
         try:
             file=open(filename, 'r')
         except IOError:
             print >> sys.stderr, "... input file not found"
             exit()
-        # read file                                                                                                 
+        # read file
         cntat=0
         natoms=0
         cntmol=0
@@ -264,8 +260,8 @@ class molecule_rw:
             if linesplit[0]!="ITEM:":
                 if   len(block)==3 and block[0:3]==["NUMBER","OF","ATOMS"]:
                     natoms=int(linesplit[0])
-                elif len(block)>=2 and block[0:3]==["BOX","BOUNDS"]:
-                    for i in len(linesplit):linesplit[i]=float(linesplit[i])
+                elif len(block)>=2 and block[0:2]==["BOX","BOUNDS"]:
+                    for i in range(len(linesplit)):linesplit[i]=float(linesplit[i])
                     box.append(linesplit)
                 elif len(block)>=1 and block[0]=="ATOMS":
                     number=self.name2element(linesplit[data[0]])[0]
@@ -309,6 +305,12 @@ class molecule_rw:
                     else:
                         mol.set(filename,cntmol)
                         mol.set_data(adddata)
+                        # calculate vectors a,b,c out of the box and tilt
+                        if len(box[0])==2 and len(box[1])==2 and len(box[2])==2: tilt=[0.0,0.0,0.0]
+                        else: tilt=[box[0][2],box[1][2],box[2][2]]
+                        vec=self.calc_vec(box[0][0:2],box[1][0:2],box[2][0:2],tilt)
+                        mol.set_vecs(vec[0],vec[1],vec[2],[box[0][0],box[1][0],box[2][0]])
+                        # append molecules
                         molecules.append(copy.copy(mol))
                         adddata=[]
                     cntmol+=1
@@ -318,10 +320,23 @@ class molecule_rw:
         # append last frame
         mol.set(filename,cntmol)
         mol.set_data(adddata)
+        # calculate vectors a,b,c out of the box and tilt
+        if len(box[0])==2 and len(box[1])==2 and len(box[2])==2: tilt=[0.0,0.0,0.0]
+        else: tilt=[box[0][2],box[1][2],box[2][2]]
+        vec=self.calc_vec(box[0][0:2],box[1][0:2],box[2][0:2],tilt)
+        mol.set_vecs(vec[0],vec[1],vec[2],[box[0][0],box[1][0],box[2][0]])
+        # append molecule
         molecules.append(copy.copy(mol))
-        # todo
-        # close file                                                                                                
+        # close file 
         file.close()
-        # return molecules                                                                                          
+        # return molecules                                                                                         
         return molecules
 
+    # calculate vectors out of box and tilt
+    def calc_vec(self,x,y,z,tilt):
+        print "NOW",x,y,z # DEBUG
+        vec=[]
+        vec.append([ x[1]-x[0], 0.0,       0.0])
+        vec.append([ tilt[0],   y[1]-y[0], 0.0])
+        vec.append([ tilt[1],   tilt[2],   z[1]-z[0] ])
+        return vec
