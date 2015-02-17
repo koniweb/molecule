@@ -334,7 +334,6 @@ class molecule_rw:
 
     # calculate vectors out of box and tilt
     def calc_vec(self,x,y,z,tilt):
-        print "NOW",x,y,z # DEBUG
         vec=[]
         vec.append([ x[1]-x[0], 0.0,       0.0])
         vec.append([ tilt[0],   y[1]-y[0], 0.0])
