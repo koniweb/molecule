@@ -475,14 +475,14 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
     # calculate relative coordinates and operate function on those
     def func_on_alat(self,function):
         counter=0
-        vecM = matrix( [ [self.vec()[0][0],self.vec()[1][0],self.vec()[2][0]],
+        vecM = numpy.matrix( [ [self.vec()[0][0],self.vec()[1][0],self.vec()[2][0]],
                          [self.vec()[0][1],self.vec()[1][1],self.vec()[2][1]],
                          [self.vec()[0][2],self.vec()[1][2],self.vec()[2][2]] ])
         for atom in self.at():
-            tmp = matrix([ [atom.coord()[0]-self.offset()[0]],
+            tmp = numpy.matrix([ [atom.coord()[0]-self.offset()[0]],
                            [atom.coord()[1]-self.offset()[1]],
                            [atom.coord()[2]-self.offset()[2]] ])
-            coord_alat=linalg.solve(vecM, tmp)
+            coord_alat=numpy.linalg.solve(vecM, tmp)
             counter=function(coord_alat,atom,counter)
         return counter
     
