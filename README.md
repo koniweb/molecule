@@ -36,5 +36,5 @@ To Do
 - [X] add rewrapping function for atoms outside the box
 - [ ] pwscf read output -- redo the write of coordinates - Final Coordinates
 - [ ] correct additional numbering in xyz output
-- [ ] change to numpy arrays
+- [S] change to numpy arrays
 - [ ] use f2py to use fortran code for expensive calculations
