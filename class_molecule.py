@@ -77,24 +77,25 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
                mext.molecule_extend):
     # initialize
     def __init__(self):           
+        print >> sys.stderr, "WITH NUMPY ARRAYS"
         # pse
         self.__pse=copy.deepcopy(pse)
         # set molecule info
         self.__file=""
         self.__filemolnumber=0
         self.__comment=""
-        self.__typelist=[] # which element
+        self.__typelist=numpy.array([]) # which element
         self.__id=id(self)
         # set atom list
         self.__at=[]
         self.__celldm=1.0
-        self.__vec=[[0.0 for x in xrange(0,ndim)]for x in xrange(0,ndim)] 
+        self.__vec=numpy.array([[0.0 for x in xrange(0,ndim)]for x in xrange(0,ndim)])
         # additional data
-        self.__data=[] # [[ info, [data atom0,data atom1,...]],...]
+        self.__data=[] # [[ info, [data atom0,data atom1,...]],...] #todo numpy array
         # vec[0]: a
         # vec[1]: b
         # vec[2]: c
-        self.__offset=[0.0,0.0,0.0]
+        self.__offset=numpy.array([0.0,0.0,0.0])
         # energy
         self.__energy=0.0
 
@@ -196,7 +197,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         
     # append to typelist
     def typelist_append(self,tid,name=""):
-        self.__typelist.append([int(tid),name])
+        numpy.append(self.__typelist,[int(tid),name])
         return
 
     def typelist_append_check(self,name="",number=-1):
@@ -301,7 +302,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         if not (c[0]==0.0 and c[1]==0.0 and c[2]==0.0):
             self.__vec[2]=c
         if not (off[0]==0.0 and off[1]==0.0 and off[2]==0.0):
-            self.__offset=off
+            self.__offset=numpy.array(off)
         return
 
     # set celldm
@@ -327,7 +328,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
 
     # def set additional data
     def set_data(self,data):
-        self.__data=data
+        self.__data=numpy.array(data)
         return 
 
     #############################################################
@@ -543,7 +544,31 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
                                     at.add_bond(neigh,per=[x,y,z]) 
                                     bndcnt+=1
         return bndcnt
-    
+
+    def Fdefine_bonds(self,cutoff,cutmin=10**(-10),atomrange=[0,-1],periodicity=False):
+        from fortran_modules import fortran_modules as f
+        # todo add periodic information
+
+        # only check atoms in range
+        arange=numpy.array(copy.deepcopy(atomrange))
+        # bonding -> change
+        bonding=numpy.array([[int(-1) for x in xrange(5)]for x in xrange(10000)],order='F')
+        
+        # call fortran code
+        #print self.vec()[0] # DEBUG
+        f.define_bonds(
+            cutoff,
+            numpy.array([i.coord() for i in self.at()]),
+            arange,
+            periodicity,
+            self.vec(),
+            bonding
+        )
+        for bond in bonding:
+            if bond[0]>-1: 
+                # add bonds
+                self.at()[bond[0]].add_bond(self.at()[bond[1]],per=[bond[2],bond[3],bond[4]])
+
 ######################################################################
 # ATOM CLASS
 ######################################################################
@@ -559,7 +584,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             # element is self.parentmol().pse()[self.parentmol().typelist[tid][0]]
             #   you can get elementinfos by using self.type() 
             #   !!! Attention number is still local number
-            self.__coord=[x,y,z]
+            self.__coord=numpy.array([x,y,z])
             self.__mult=[mx,my,mz]
             self.__charge=atomcharge
             # bonds

@@ -37,9 +37,9 @@ class molecule_extend():
     # extend molecule
     def extend(self):
         if not hasattr(self, "mol"):
-            self.mol=[]
+            self.mol=numpy.array([])
             # shift data
-            self.mol.append(self.__class__())
+            numpy.append(self.mol,self.__class__())
             self.mol[0].set               (copy.deepcopy(self.file()),
                                            copy.deepcopy(self.filemolnumber()),
                                            copy.deepcopy(self.comment()))
@@ -87,7 +87,7 @@ class molecule_extend():
                          rotp[0],rotp[1],rotp[2])
             molecule.shift(shiftv[0],shiftv[1],shiftv[2])
             # create new submolecule and copy data
-            self.mol.append(self.__class__())
+            numpy.append(self.mol,self.__class__())
             self.mol[molid].set_typelist2list(copy.deepcopy(self.typelist())) # CHECK
             self.mol[molid].set_id(molid)   # ID
             self.mol[molid].shiftvec=shiftv # shiftvec
@@ -167,7 +167,7 @@ class molecule_extend():
     def atoms_into_submol(self,idlist):
         if hasattr(self,"mol"):
             molid=self.nmol()
-            self.mol.append(self.__class__())
+            numpy.append(self.mol,self.__class__())
             # search for all atoms in idlist
             for idcnt in range(0,len(idlist)):
                 found=False
