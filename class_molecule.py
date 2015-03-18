@@ -552,12 +552,13 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         # only check atoms in range
         arange=numpy.array(copy.deepcopy(atomrange))
         # bonding -> change
-        bonding=numpy.array([[int(-1) for x in xrange(5)]for x in xrange(10000)],order='F')
+        bonding=numpy.array([[int(-1) for x in xrange(5)]for x in xrange(1000000)],order='F')
         
         # call fortran code
         #print self.vec()[0] # DEBUG
         f.define_bonds(
             cutoff,
+            cutmin,
             numpy.array([i.coord() for i in self.at()]),
             arange,
             periodicity,
