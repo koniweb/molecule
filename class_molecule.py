@@ -545,14 +545,12 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
                                     bndcnt+=1
         return bndcnt
 
-    def Fdefine_bonds(self,cutoff,cutmin=10**(-10),atomrange=[0,-1],periodicity=False):
+    def Fdefine_bonds(self,cutoff,cutmin=10**(-10),atomrange=[0,-1],periodicity=False,nbondmax=10):
         from fortran_modules import fortran_modules as f
-        # todo add periodic information
-
         # only check atoms in range
         arange=numpy.array(copy.deepcopy(atomrange))
         # bonding -> change
-        bonding=numpy.array([[int(-1) for x in xrange(5)]for x in xrange(1000000)],order='F')
+        bonding=numpy.array([[int(-1) for x in xrange(5)]for x in xrange(self.natoms()*nbondmax)],order='F')
         
         # call fortran code
         #print self.vec()[0] # DEBUG
@@ -565,10 +563,12 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             self.vec(),
             bonding
         )
+        # add bonds
         for bond in bonding:
-            if bond[0]>-1: 
-                # add bonds
-                self.at()[bond[0]].add_bond(self.at()[bond[1]],per=[bond[2],bond[3],bond[4]])
+            if bond[0]==-1: 
+                break
+            else:
+                if bond[0]!=-1: self.at()[bond[0]].add_bond(self.at()[bond[1]],per=[bond[2],bond[3],bond[4]])
 
 ######################################################################
 # ATOM CLASS

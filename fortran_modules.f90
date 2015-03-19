@@ -41,7 +41,7 @@ CONTAINS
 
     ! loop over periodic boxes
     DO i=0,natoms
-       IF (mod(i,100) .eq. 0) write(0,*) "...bonding for atom ",i, " of ",natoms," calculated"
+       IF (mod(i,100) .eq. 0) write(0,*) "...bonding for atom ",i+1, " of ",natoms+1," calculated"
        ! only atomrange
        IF (i>=arange(0) .AND. i<=arange(1)) THEN
           DO j=0,natoms
