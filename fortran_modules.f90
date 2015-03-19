@@ -42,42 +42,45 @@ CONTAINS
     ! loop over periodic boxes
     DO i=0,natoms
        IF (mod(i,100) .eq. 0) write(0,*) "...bonding for atom ",i, " of ",natoms," calculated"
-       DO j=0,natoms
-
-          DO x=-nper,nper
-             DO y=-nper,nper
-                DO z=-nper,nper
-                   
-                   
-                   ! distance sq calculation
-                   distsq=0.0D0
-                   DO dim=1,3
-                      distsq=distsq+(coords(i,dim)-(coords(j,dim) +x*vec(dim,1) +y*vec(dim,2) +z*vec(dim,3)) )**2
+       ! only atomrange
+       IF (i>=arange(0) .AND. i<=arange(1)) THEN
+          DO j=0,natoms
+          
+             DO x=-nper,nper
+                DO y=-nper,nper
+                   DO z=-nper,nper
+                      
+                      
+                      ! distance sq calculation
+                      distsq=0.0D0
+                      DO dim=1,3
+                         distsq=distsq+(coords(i,dim)-(coords(j,dim) +x*vec(dim,1) +y*vec(dim,2) +z*vec(dim,3)) )**2
+                      END DO
+                         
+                      ! cutoffsq check
+                      IF (distsq < cutoffsq .AND. distsq > cutminsq) THEN
+                         bonding(bondcnt,1)=i
+                         bonding(bondcnt,2)=j
+                         bonding(bondcnt,3)=x
+                         bonding(bondcnt,4)=y
+                         bonding(bondcnt,5)=z
+                         bondcnt=bondcnt+1
+                         !write(0,*) distsq,cutoff
+                         !write (0,*) bondcnt
+                      END IF
+                      
+                      ! CHECK if bondlist to small
+                      IF (bondcnt>= bondmax) THEN
+                         WRITE(0,*) "ERROR WITH FORTRAN DEFINE BONDS"
+                         STOP
+                      END IF
+                         
                    END DO
-                      
-                   ! cutoffsq check
-                   IF (distsq < cutoffsq .AND. distsq > cutminsq) THEN
-                      bonding(bondcnt,1)=i
-                      bonding(bondcnt,2)=j
-                      bonding(bondcnt,3)=x
-                      bonding(bondcnt,4)=y
-                      bonding(bondcnt,5)=z
-                      bondcnt=bondcnt+1
-                      !write(0,*) distsq,cutoff
-                      !write (0,*) bondcnt
-                   END IF
-                   
-                   ! CHECK if bondlist to small
-                   IF (bondcnt>= bondmax) THEN
-                      WRITE(0,*) "ERROR WITH FORTRAN DEFINE BONDS"
-                      STOP
-                   END IF
-                      
                 END DO
              END DO
+          
           END DO
-
-       END DO
+       END IF
     END DO
     
     
