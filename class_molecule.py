@@ -5,7 +5,7 @@
 #   Atom Class
 #   Bond Class
 ##########################################################################
-version=3.5
+version=3.6
 versiontext='# class_molecule.py version {:.1f}'.format(version)
 #----------------------------------------------------------------------
 # import
@@ -83,18 +83,18 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         self.__file=""
         self.__filemolnumber=0
         self.__comment=""
-        self.__typelist=numpy.array([]) # which element
+        self.__typelist=[] # which element
         self.__id=id(self)
         # set atom list
         self.__at=[]
         self.__celldm=1.0
-        self.__vec=numpy.array([[0.0 for x in xrange(0,ndim)]for x in xrange(0,ndim)])
+        self.__vec=[[0.0 for x in xrange(0,ndim)]for x in xrange(0,ndim)]
         # additional data
-        self.__data=[] # [[ info, [data atom0,data atom1,...]],...] #todo numpy array
+        self.__data=[] # [[ info, [data atom0,data atom1,...]],...]
         # vec[0]: a
         # vec[1]: b
         # vec[2]: c
-        self.__offset=numpy.array([0.0,0.0,0.0])
+        self.__offset=[0.0,0.0,0.0]
         # energy
         self.__energy=0.0
 
@@ -196,7 +196,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         
     # append to typelist
     def typelist_append(self,tid,name=""):
-        numpy.append(self.__typelist,[int(tid),name])
+        self.__typelist.append([int(tid),name])
         return
 
     def typelist_append_check(self,name="",number=-1):
@@ -301,7 +301,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         if not (c[0]==0.0 and c[1]==0.0 and c[2]==0.0):
             self.__vec[2]=c
         if not (off[0]==0.0 and off[1]==0.0 and off[2]==0.0):
-            self.__offset=numpy.array(off)
+            self.__offset=off
         return
 
     # set celldm
@@ -327,7 +327,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
 
     # def set additional data
     def set_data(self,data):
-        self.__data=numpy.array(data)
+        self.__data=data
         return 
 
     #############################################################
@@ -516,7 +516,8 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
 
     # find bonds for atoms with length smaller than cutoff
     def define_bonds(self,cutoff,cutmin=10**(-10),atomrange=[0,-1],periodicity=False,nbondmax=10):
-        bndcnt=self.Fdefine_bonds(self,cutoff,cutmin,atomrange,periodicity,nbondmax)
+        bndcnt=self.Fdefine_bonds(cutoff,cutmin,atomrange,periodicity,nbondmax)
+        #bndcnt=self.Pdefine_bonds(cutoff,cutmin,atomrange,periodicity)
         return bndcnt
 
     # find bonds for atoms with length smaller than cutoff
@@ -526,8 +527,8 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         if arange[1]<arange[0]: arange[1]=sys.maxint
         for at in self.at():
             # print if 
-            if (at.id()%100)==0: 
-                print >> sys.stderr, "...bonding for atom {:d} of {:d} calculated".format(at.id(),self.natoms())
+            if (at.id()%100)==0 or at.id()==self.natoms()-1: 
+                print >> sys.stderr, "...bonding for atom {:d} of {:d} calculated".format(at.id()+1,self.natoms())
             # only check atoms in range
             if at.id()>=arange[0] and at.id()<=arange[1]:
                 # do bond calculation for periodic structures
@@ -565,7 +566,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             numpy.array([i.coord() for i in self.at()]),
             arange,
             periodicity,
-            self.vec(),
+            numpy.array(self.vec()),
             bonding
         )
         # add bonds
@@ -594,7 +595,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             # element is self.parentmol().pse()[self.parentmol().typelist[tid][0]]
             #   you can get elementinfos by using self.type() 
             #   !!! Attention number is still local number
-            self.__coord=numpy.array([x,y,z])
+            self.__coord=[x,y,z]
             self.__mult=[mx,my,mz]
             self.__charge=atomcharge
             # bonds
