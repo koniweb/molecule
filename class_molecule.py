@@ -77,7 +77,6 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
                mext.molecule_extend):
     # initialize
     def __init__(self):           
-        print >> sys.stderr, "WITH NUMPY ARRAYS"
         # pse
         self.__pse=copy.deepcopy(pse)
         # set molecule info
@@ -514,8 +513,14 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             self.set_atomlist(sorted(self.at(), key=lambda atom:factor*atom.coord()[dir]))
         return
 
+
     # find bonds for atoms with length smaller than cutoff
-    def define_bonds(self,cutoff,cutmin=10**(-10),atomrange=[0,-1],periodicity=False):
+    def define_bonds(self,cutoff,cutmin=10**(-10),atomrange=[0,-1],periodicity=False,nbondmax=10):
+        bndcnt=self.Fdefine_bonds(self,cutoff,cutmin,atomrange,periodicity,nbondmax)
+        return bndcnt
+
+    # find bonds for atoms with length smaller than cutoff
+    def Pdefine_bonds(self,cutoff,cutmin=10**(-10),atomrange=[0,-1],periodicity=False):
         bndcnt=0
         arange=copy.deepcopy(atomrange)
         if arange[1]<arange[0]: arange[1]=sys.maxint
@@ -564,11 +569,15 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             bonding
         )
         # add bonds
+        bndcnt=0
         for bond in bonding:
             if bond[0]==-1: 
                 break
             else:
                 if bond[0]!=-1: self.at()[bond[0]].add_bond(self.at()[bond[1]],per=[bond[2],bond[3],bond[4]])
+                bndcnt+=1
+        return bndcnt
+
 
 ######################################################################
 # ATOM CLASS
