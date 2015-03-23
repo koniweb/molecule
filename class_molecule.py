@@ -83,7 +83,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         self.__file=""
         self.__filemolnumber=0
         self.__comment=""
-        self.__typelist=[] # which element
+        self.__typelist=[] # which element by name
         self.__id=id(self)
         # set atom list
         self.__at=[]

@@ -9,14 +9,15 @@ It is in principle the basis for analysis codes.
   
 It contains:  
 
-file              | comment
-:-----------------|:-----------------------------------------
-class_molecule.py | main module file with molecule class
-mod_calc.py       | module with calculation functions
-mod_extend.py	  | module to extend the molecule
-mod_lmp.py	      | modules to read and write files (LAMMPS)
-mod_pwscf.py	  | modules to read and write files (pwscf input and output)
-mod_xyz.py        | modules to read and write files (xyz)
+file                | comment
+:-------------------|:-----------------------------------------
+class_molecule.py   | main module file with molecule class
+mod_calc.py         | module with calculation functions
+mod_extend.py	    | module to extend the molecule
+mod_lmp.py	        | modules to read and write files (LAMMPS)
+mod_pwscf.py	    | modules to read and write files (pwscf input and output)
+mod_xyz.py          | modules to read and write files (xyz)
+fortran_modules.f90 | modules to calculate bonds
 
 additional module files
 =========================
@@ -36,5 +37,7 @@ To Do
 - [X] add rewrapping function for atoms outside the box
 - [ ] pwscf read output -- redo the write of coordinates - Final Coordinates
 - [ ] correct additional numbering in xyz output
-- [S] change to numpy arrays
+- [ ] change to numpy arrays
 - [ ] use f2py to use fortran code for expensive calculations
+- [X] use fortran with f2py for bond calculation
+- [ ] change typelist to namelist
