@@ -517,7 +517,13 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
     # find bonds for atoms with length smaller than cutoff
     def define_bonds(self,cutoff,cutmin=10**(-10),atomrange=[0,-1],periodicity=False,nbondmax=10):
         bndcnt=self.Fdefine_bonds(cutoff,cutmin,atomrange,periodicity,nbondmax)
-        #bndcnt=self.Pdefine_bonds(cutoff,cutmin,atomrange,periodicity)
+        # if there is an error try a larger nbondmax
+        if bndcnt<0:
+            bndcnt=self.Fdefine_bonds(cutoff,cutmin,atomrange,periodicity,nbondmax*50)
+            # if it still does not work use the python function
+            if bnccnt<0:
+                print >> sys.stderr, "...use python to define bonds"
+                bndcnt=self.Pdefine_bonds(cutoff,cutmin,atomrange,periodicity)
         return bndcnt
 
     # find bonds for atoms with length smaller than cutoff
@@ -558,6 +564,7 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         # bonding -> change
         bonding=numpy.array([[int(-1) for x in xrange(5)]for x in xrange(self.natoms()*nbondmax)],order='F')
         
+        error=False
         # call fortran code
         #print self.vec()[0] # DEBUG
         f.define_bonds(
@@ -567,7 +574,8 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             arange,
             periodicity,
             numpy.array(self.vec()),
-            bonding
+            bonding,
+            error
         )
         # add bonds
         bndcnt=0
@@ -577,7 +585,12 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
             else:
                 if bond[0]!=-1: self.at()[bond[0]].add_bond(self.at()[bond[1]],per=[bond[2],bond[3],bond[4]])
                 bndcnt+=1
-        return bndcnt
+        # return
+        if error:
+            print >> sys.stderr, "test" #DEBUG
+            return -1
+        else:
+            return bndcnt
 
 
 ######################################################################

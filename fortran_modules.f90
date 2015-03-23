@@ -4,7 +4,7 @@ MODULE fortran_modules
 
 CONTAINS 
   
-  subroutine define_bonds(cutoff,cutmin,natoms,ndim,coords,arange,periodicity,bondmax,vec,bonding)
+  subroutine define_bonds(cutoff,cutmin,natoms,ndim,coords,arange,periodicity,bondmax,vec,bonding,ERROR)
     IMPLICIT NONE
     DOUBLE PRECISION, INTENT(IN)                           :: cutoff
     DOUBLE PRECISION, INTENT(IN)                           :: cutmin
@@ -13,12 +13,16 @@ CONTAINS
     LOGICAL,INTENT(IN)                                     :: periodicity
     DOUBLE PRECISION, DIMENSION(ndim,ndim), INTENT(IN)     :: vec
     INTEGER(KIND=8), DIMENSION(bondmax,2+ndim),INTENT(INOUT)    :: bonding
+    LOGICAL, INTENT(INOUT)                                 :: ERROR
     ! local data
     INTEGER :: natoms,ndim,bondmax
     ! counter
     DOUBLE PRECISION :: distsq,cutoffsq,cutminsq
     INTEGER :: i,j,nper,x,y,z,dim
-    INTEGER :: bondcnt=1
+    INTEGER :: bondcnt
+
+    ! set error
+    ERROR=.FALSE.
 
     ! set maximum range
     IF(arange(1)<arange(0)) THEN 
@@ -40,7 +44,9 @@ CONTAINS
     !write (*,*) vec(1,:)
 
     ! loop over periodic boxes
-    DO i=0,natoms
+
+    bondcnt=1
+    ATOMLOOP: DO i=0,natoms
        IF ((mod(i,100) .eq. 0) .OR. (i==natoms)) THEN
           write(0,*) "...bonding for atom ",i+1, " of ",natoms+1," calculated"
        END IF
@@ -74,7 +80,8 @@ CONTAINS
                       ! CHECK if bondlist to small
                       IF (bondcnt>= bondmax) THEN
                          WRITE(0,*) "ERROR WITH FORTRAN DEFINE BONDS"
-                         STOP
+                         ERROR=.TRUE.
+                         EXIT ATOMLOOP
                       END IF
                          
                    END DO
@@ -83,7 +90,7 @@ CONTAINS
           
           END DO
        END IF
-    END DO
+    END DO ATOMLOOP
     
     
   END subroutine define_bonds
