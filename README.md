@@ -28,16 +28,16 @@ class_molecule_crystal.py | extention to class_molecule.py to cut nanocrystals
 
 To Do
 =====
-- [X] add additional read write flags for lammps in and output
-- [X] allow for extended xyz output
-- [X] allow extended xyz input
-- [X] combine extended and normal xyz read
-- [X] combine extended and normal xyz write
-- [X] extended xyz write also take stored data of atoms in molecule
-- [X] add rewrapping function for atoms outside the box
-- [ ] pwscf read output -- redo the write of coordinates - Final Coordinates
+- [x] add additional read write flags for lammps in and output
+- [x] allow for extended xyz output
+- [x] allow extended xyz input
+- [x] combine extended and normal xyz read
+- [x] combine extended and normal xyz write
+- [x] extended xyz write also take stored data of atoms in molecule
+- [x] add rewrapping function for atoms outside the box
+- [x] pwscf read output -- redo the write of coordinates - Final Coordinates
 - [ ] correct additional numbering in xyz output
 - [ ] change to numpy arrays
 - [ ] use f2py to use fortran code for expensive calculations
-- [X] use fortran with f2py for bond calculation
+- [x] use fortran with f2py for bond calculation
 - [ ] change typelist to namelist

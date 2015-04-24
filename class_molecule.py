@@ -745,6 +745,10 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
         def set_fixes(self,fixes):
             if len(fixes)<=3: self.__fixes=fixes           
 
+        # set fixes for atoms
+        def set_bonds(self,newbonds):
+            self.__bonds=newbonds
+
         #############################################################
         # modify functions
         #############################################################   
@@ -780,7 +784,6 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
 
         def bondvector(self):
             return calc.a_vec(self.atom(),self.neighbor(),self.per())
-            
         #############################################################
         # set functions
         #############################################################
