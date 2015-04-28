@@ -4,18 +4,18 @@ MODULE fortran_modules
 
 CONTAINS 
   
-  subroutine define_bonds(cutoff,cutmin,natoms,ndim,coords,arange,periodicity,bondmax,vec,bonding,ERROR)
+  subroutine define_bonds(cutoff,cutmin,natoms,ndim,coords,alist,ncalc,periodicity,bondmax,vec,bonding,ERROR)
     IMPLICIT NONE
     DOUBLE PRECISION, INTENT(IN)                           :: cutoff
     DOUBLE PRECISION, INTENT(IN)                           :: cutmin
     DOUBLE PRECISION, DIMENSION(0:natoms,ndim), INTENT(IN) :: coords
-    INTEGER, DIMENSION(0:1)                                :: arange
+    INTEGER, DIMENSION(0:ncalc)                            :: alist
     LOGICAL,INTENT(IN)                                     :: periodicity
     DOUBLE PRECISION, DIMENSION(ndim,ndim), INTENT(IN)     :: vec
     INTEGER(KIND=8), DIMENSION(bondmax,2+ndim),INTENT(INOUT)    :: bonding
     LOGICAL, INTENT(INOUT)                                 :: ERROR
     ! local data
-    INTEGER :: natoms,ndim,bondmax
+    INTEGER :: natoms,ndim,bondmax,ncalc
     ! counter
     DOUBLE PRECISION :: distsq,cutoffsq,cutminsq
     INTEGER :: i,j,nper,x,y,z,dim
@@ -24,11 +24,6 @@ CONTAINS
     ! set error
     ERROR=.FALSE.
 
-    ! set maximum range
-    IF(arange(1)<arange(0)) THEN 
-       arange(1)=huge(arange(1))
-    END IF
-    
     ! loop over atoms
     IF (periodicity .eqv. .TRUE.) THEN
        nper=-1
@@ -51,7 +46,7 @@ CONTAINS
           write(0,*) "...bonding for atom ",i+1, " of ",natoms+1," calculated"
        END IF
        ! only atomrange
-       IF (i>=arange(0) .AND. i<=arange(1)) THEN
+       IF ( ANY( alist==i)) THEN
           DO j=0,natoms
           
              DO x=-nper,nper
