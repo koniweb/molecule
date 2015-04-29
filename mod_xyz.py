@@ -124,6 +124,9 @@ class molecule_rw:
                     (cntmol>=start and (cntmol<=end or end==-1))  ):
                     mol.set(filename,cntmol,comment)
                     molecules.append(copy.copy(mol))
+                # info output
+                if len(molecules)%100==0:
+                    print >>sys.stderr,"...structure {:4d} read in".format(len(molecules))
         # if start==-1 add last frame only
         if start==-1:
             mol.set(filename,cntmol,comment)
@@ -131,6 +134,7 @@ class molecule_rw:
         # close file
         file.close()
         # return molecules
+        print >>sys.stderr,"...structure {:4d} read in".format(len(molecules))
         return molecules
 
     def exyz_readcomment(self,comment):
