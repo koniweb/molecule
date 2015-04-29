@@ -26,6 +26,10 @@ file                      | comment
 :-------------------------|:-----------------------------------------
 class_molecule_crystal.py | extention to class_molecule.py to cut nanocrystals
 
+Compile fortran module
+======================
+> f2py -c fortran_modules.f90 -m fortran_modules
+
 To Do
 =====
 - [x] add additional read write flags for lammps in and output
