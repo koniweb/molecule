@@ -38,6 +38,6 @@ To Do
 - [x] pwscf read output -- redo the write of coordinates - Final Coordinates
 - [ ] correct additional numbering in xyz output
 - [ ] change to numpy arrays
-- [ ] use f2py to use fortran code for expensive calculations
+- [x] use f2py to use fortran code for expensive calculations
 - [x] use fortran with f2py for bond calculation
 - [ ] change typelist to namelist
