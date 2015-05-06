@@ -461,11 +461,19 @@ class molecule(mxyz.molecule_rw,mpw.molecule_rw,mlmp.molecule_rw,
     def wrap_atom(self,coord_alat,atom,nwrap):
         # calculate shift to box
         shift=[0.0,0.0,0.0]
-        for i in range(ndim):
-            if coord_alat[i]>1.0: 
-                for idim in range(ndim): shift[idim]-=self.vec()[i][idim]
-            elif coord_alat[i]<0.0: 
-                for idim in range(ndim): shift[idim]+=self.vec()[i][idim]
+        outofbox=True
+        while outofbox==True:
+            for i in range(ndim):
+                if coord_alat[i]>1.0: 
+                    for idim in range(ndim): shift[idim]-=self.vec()[i][idim]
+                    coord_alat[i]-=1
+                elif coord_alat[i]<0.0: 
+                    for idim in range(ndim): shift[idim]+=self.vec()[i][idim]
+                    coord_alat[i]+=1
+            outofbox=False
+            for i in range(ndim):
+                if coord_alat[i]>1.0 or coord_alat[i]<0.0:  outofbox=True
+                
         # reset coordinates
         if shift!=[0.0,0.0,0.0]:
             nwrap+=1
