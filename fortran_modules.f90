@@ -26,7 +26,7 @@ CONTAINS
 
     ! loop over atoms
     IF (periodicity .eqv. .TRUE.) THEN
-       nper=-1
+       nper=1
     ELSE
        nper=0
     END IF

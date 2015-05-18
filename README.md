@@ -45,4 +45,4 @@ To Do
 - [x] use f2py to use fortran code for expensive calculations
 - [x] use fortran with f2py for bond calculation
 - [ ] change typelist to namelist
-- [ ] check offset in wrapping
+- [ ] check offset in wrapping and do wrapping as int(unitvector)
