@@ -20,7 +20,8 @@ import mod_calc as calc
 #----------------------------------------------------------------------
 class molecule_rw:
     # write lammps file
-    def writelmp(self,filename="",status='w',lcharge=False,lmoltype=False):
+    def writelmp(self,filename="",status='w',lcharge=False,lmoltype=False,
+                 comment=""):
         ndim=calc.ndim
         # define vec and offset
         v=self.vec()
@@ -35,8 +36,10 @@ class molecule_rw:
         else:
             f=open(filename, status)
         mol=self
-        print >>f
-        print >>f
+        # print comment
+        if len(comment)>0: print >>f, ("{:s}").format(comment),
+        print >>f, " "
+        print >>f, " "
         # numbers
         print >>f, ("{:d} atoms".format(mol.natoms()))
         print >>f
